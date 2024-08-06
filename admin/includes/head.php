@@ -1,6 +1,6 @@
 <?php 
 require 'dbconfig.php';
-include '../../url.php';
+include '../url.php';
 session_start();
 if(!isset($_SESSION["id"])) {
     header("Location:login.php");
