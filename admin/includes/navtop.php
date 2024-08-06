@@ -2,7 +2,7 @@
    <a class="sidebar-toggle d-flex">
    <i class="hamburger align-self-center"></i>
    </a>
-   <form method="GET" action="https://www.carwash-jo.com/" class="form-inline d-none d-sm-inline-block">
+   <form method="GET" action="/" class="form-inline d-none d-sm-inline-block">
       <div class="input-group input-group-navbar">
          <input type="text" class="form-control" placeholder="Search Status…" aria-label="Search Status" name="track">
          <div class="input-group-append">

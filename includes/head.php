@@ -1,23 +1,23 @@
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	<title>Car Wash Jo</title>
+	<title>Car Wash</title>
 	<meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
 	<link rel="icon" href="../admin/img/ico.png" type="image/x-icon"/>
 
-    <meta name="title" content="Car Wash Jo">
+    <meta name="title" content="Nextgensoft">
     <meta name="description" content="Check your car wash status online!">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.carwash-jo.com/">
-    <meta property="og:title" content="Car Wash Jo">
+    <meta property="og:url" content="<?php echo $url?>">
+    <meta property="og:title" content="Nextgensoft">
     <meta property="og:description" content="Check your car wash status online!">
     <meta property="og:image" content="./assets/banner.jpg">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://www.carwash-jo.com/">
-    <meta property="twitter:title" content="Car Wash Jo">
+    <meta property="twitter:url" content="<?php echo $url?>">
+    <meta property="twitter:title" content="Nextgensoft">
     <meta property="twitter:description" content="Check your car wash status online!">
     <meta property="twitter:image" content="./assets/banner.jpg">
     

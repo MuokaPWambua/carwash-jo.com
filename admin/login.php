@@ -8,14 +8,14 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.carwash-jo.com/">
-    <meta property="og:title" content="Car Wash Jo | Login">
+    <meta property="og:url" content="<?php echo $url ?>">
+    <meta property="og:title" content="Nextgensoft | Login">
     <meta property="og:description" content="Check your car wash status online!">
     <meta property="og:image" content="../../assets/banner.jpg">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://www.carwash-jo.com/">
+    <meta property="twitter:url" content="<?php echo $url ?>">
     <meta property="twitter:title" content="Car Wash Jo">
     <meta property="twitter:description" content="Check your car wash status online!">
     <meta property="twitter:image" content="../../assets/banner.jpg">

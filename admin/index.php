@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-   <?php include 'includes/head.php';
-    ?>
+   <?php include 'includes/head.php';?>
    <body>
       <div class="wrapper">
          <?php include 'includes/nav.php';?>
@@ -16,7 +15,7 @@
                               <h5 class="card-title mb-0">Stats for <?php echo date("Y");?></h5>
                            </div>
                            <div class="card-body">
-                               <canvas id="myChart"></canvas>
+                              <canvas id="myChart"></canvas>
                            </div>
                         </div>
                      </div>

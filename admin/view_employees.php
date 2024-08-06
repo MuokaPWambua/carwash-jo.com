@@ -1,21 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-    <?php include 'includes/head.php';
+   <?php include 'includes/head.php';
+   
         
-        $sql = "SELECT q.id, q.last_update, q.staff, q.in_time, q.out_time, sert.type as 'service_type', q.status_type as 'status_type', st.name as 'status', q.owner_name, q.vehicle_number from service_type sert, queue q, status_type st where st.id = q.status_type AND q.service_type=sert.id ORDER BY q.status_type ASC LIMIT 1000";
+    $sql = "SELECT 
+        e.id AS employee_id,
+        e.name AS employee_name,
+        e.employee_status AS status_type,
+        e.employee_email AS employee_email,
+        e.employee_contact AS employee_phone,
+        e.employee_address AS employee_address,
+        SUM(st.service_cost) AS total_revenue,
+        SUM(st.service_cost * st.service_commission / 100) AS total_commission
+    FROM 
+        staff e
+    LEFT JOIN 
+        queue q ON e.id = q.staff
+    LEFT JOIN 
+        service_type st ON q.service_type = st.id
+    GROUP BY 
+        e.id, e.name, e.employee_email, e.employee_contact, e.employee_address
+    ORDER BY
+        total_revenue
+    ASC LIMIT 1000";
         
-        $result = mysqli_query($con, $sql);
+    $result = mysqli_query($con, $sql);
         
-        $message="";    
+    $message="";
+    
+    if(isset($_POST['submit'])){
+        $message;
+        $employee_email = mysqli_real_escape_string($con, $_POST['employee_email']);
+        $employee_name = mysqli_real_escape_string($con, $_POST['employee_name']);
+        $employee_contact = mysqli_real_escape_string($con, $_POST['employee_contact']);
+        $employee_address = mysqli_real_escape_string($con, $_POST['employee_address']);
+
+        $insert = "INSERT INTO staff (employee_email, name, employee_contact, employee_address) VALUES ('$employee_email', '$employee_name', '$employee_contact', '$employee_address') ON DUPLICATE KEY UPDATE employee_email='$employee_email', name='$employee_name', employee_contact='$employee_contact', employee_address='$employee__address';";
+        
+        if(mysqli_query($con, $insert)){
+            $message = "Employee Information Added.";
+        } else {
+            $message = "Error: " . mysqli_error($conn);
+        }
+
+    }
+            
     ?>
-   <body>
+    <body>
       <div class="wrapper">
          <?php include 'includes/nav.php';?>
          <div class="main">
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">View All Vehicles</h1>
+                  <h1 class="h3 mb-3">View All Employees</h1>
                   <div class="row">
                      <div class="col-12">
                         <div class="card">
@@ -27,12 +65,12 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Vehicle Number</th>
-                                        <th>Owner</th>
-                                        <th>Car Wash Type</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Address</th>
                                         <th>Status</th>
-                                        <th>Registration Time</th>
-                                         <th>Last Update</th>
+                                        <th>Revenue</th>
+                                        <th>Commission</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -40,8 +78,7 @@
                             <?php
                             if (mysqli_num_rows($result) > 0) {
                               // output data of each row
-                              while($row = mysqli_fetch_assoc($result)) {
-                                $icon = 'fa-car';
+                            while($row = mysqli_fetch_assoc($result)) {
                                 $status = 'text-success';
                                 
                                 if($row["status_type"] == '2'){
@@ -52,22 +89,22 @@
                                     $status = 'text-primary';
                                 }else if($row["status_type"] == '4'){
                                     $status = 'text-alert';
-                                }else if($row["status_type"] == '3'){
+                                }else if($row["status_type"] == 'idle'){
                                     $status = 'text-success';
                                 }
                                 
                                 
-                                $icon = 'fa-car';
+                                    $icon = 'fa-car';
                                 
                                 
                                 echo '<tr>
-                                    <td>'.$row['id'].'</td>
-                                    <td><i class="align-middle fa '.$icon.'"> </i> '.$row['vehicle_number'].'</td>
-                                    <td>'.$row['owner_name'].'</td>
-                                    <td>'.$row['service_type'].'</td>
-                                    <td><span class="'.$status.'">'.$row['status'].'</span></td>
-                                    <td>'.date('l jS \of F Y h:i:s A', strtotime($row['in_time'])).'</td>
-                                    <td>'.($row['last_update'] != '' ? date('l jS \of F Y h:i:s A', strtotime($row['out_time'])) : null).'</td>
+                                    <td>'.$row['employee_id'].'</td>
+                                    <td><i class="align-middle fa '.$icon.'"> </i> '.$row['employee_name'].'</td>
+                                    <td>'.$row['employee_email'].'</td>
+                                    <td>'.$row['employee_address'].'</td>
+                                    <td><span class="'.$status.'">'.$row['status_type'].'</span></td>
+                                    <td>'.$row['total_revenue'].'</td>
+                                    <td>'.$row['total_commission'].'</td>
                                     <td class="table-action">
 												<a onclick="loadData('.$row['id'].')" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
 											</td>
@@ -87,12 +124,12 @@
         <tfoot>
             <tr>
                 <th>ID</th>
-                <th>Vehicle Number</th>
-                <th>Owner</th>
-                <th>Car Wash Type</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Address</th>
                 <th>Status</th>
-                <th>Registration Time</th>
-                <th>Last Update</th>
+                <th>Commission</th>
+                <th>Revenue</th>
                 <th>Action</th>
             </tr>
         </tfoot>

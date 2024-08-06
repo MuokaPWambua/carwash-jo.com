@@ -1,5 +1,5 @@
 <?php
-$con = mysqli_connect("localhost","carwash_user","carwash_user","carwash_data");
+$con = mysqli_connect("localhost","carwash_user","carwash_user","carwash_user");
 
 // Check connection
 if (mysqli_connect_errno()) {

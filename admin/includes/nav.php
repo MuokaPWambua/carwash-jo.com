@@ -1,7 +1,7 @@
 		<nav id="sidebar" class="sidebar">
 			<div class="sidebar-content js-simplebar">
 				<a class="sidebar-brand" href="index.php">
-          <span class="align-middle">Car Wash Jo</span>
+          <span class="align-middle">Car Wash</span>
         </a>
 
 				<ul class="sidebar-nav">
@@ -10,15 +10,15 @@
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" target="_blank" href="https://www.carwash-jo.com/">
-              <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Main Dashboard</span>
-            </a>
+						<a class="sidebar-link"  href="/admin/">
+                        <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Main Dashboard</span>
+                        </a>
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link"  target="_blank" href="https://www.carwash-jo.com/?track=1">
-              <i class="align-middle" data-feather="check-circle"></i> <span class="align-middle">Status Check</span>
-            </a>
+						<a class="sidebar-link"  href="/">
+                        <i class="align-middle" data-feather="check-circle"></i> <span class="align-middle">Status Check</span>
+                        </a>
 					</li>
 
 					<li class="sidebar-header">
@@ -26,16 +26,39 @@
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="vehicleForm.php">
-              <i class="align-middle fa fa-plus" ></i> <span class="align-middle">Add Vehicle</span>
-            </a>
+						<a class="sidebar-link" href="add_service.php">
+                            <i class="align-middle fas fa-cogs" ></i> <span class="align-middle">Add Service</span>
+                        </a>
 					</li>
 
 
 					<li class="sidebar-item">
+						<a class="sidebar-link" href="add_employee.php">
+                            <i class="align-middle fas fa-user-plus" ></i> <span class="align-middle">Add Employee</span>
+                        </a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="vehicleForm.php">
+						<i class="align-middle fas fa-car" ></i> <span class="align-middle">Add Vehicle</span>
+						</a>
+					</li>
+					<li class="sidebar-item">
 						<a class="sidebar-link" href="view.php">
-              <i class="align-middle fa fa-eye"></i> <span class="align-middle">View All Vehicles</span>
-            </a>
+                        <i class="align-middle fa fa-eye"></i> <span class="align-middle">View All Vehicles</span>
+                        </a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="view_services.php">
+                        <i class="align-middle fas fa-clipboard-list"></i> <span class="align-middle">View All Services</span>
+                        </a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="view_employees.php">
+                        <i class="align-middle fas fa-users"></i><span class="align-middle">View All Employees</span>
+                        </a>
 					</li>
 					
 					<li class="sidebar-header">
@@ -44,37 +67,35 @@
 
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="index.php">
-              <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Monthly Reports</span>
-            </a>
+                        <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Monthly Reports</span>
+                        </a>
 					</li>
-					
-			<li class="sidebar-item">
+                    <li class="sidebar-item">
 						<a class="sidebar-link" href="index.php">
-              <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Annual Reports</span>
-            </a>
+						<i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Annual Reports</span>
+						</a>
 					</li>
 					
-				<li class="sidebar-item">
+				    <li class="sidebar-item">
 						<a class="sidebar-link" target="_blank" href="index.php">
-              <i class="align-middle fa fa-edit" ></i> <span class="align-middle">Custom Reports</span>
-            </a>
+                        <i class="align-middle fa fa-edit" ></i> <span class="align-middle">Custom Reports</span>
+                        </a>
 					</li>
 					
-			<li class="sidebar-item">
+			        <li class="sidebar-item">
 						<a class="sidebar-link" href="updateNotifications.php">
-              <i class="align-middle fa fa-volume-up" ></i> <span class="align-middle">Update Notifications</span>
-            </a>
+                        <i class="align-middle fa fa-volume-up" ></i> <span class="align-middle">Update Notifications</span>
+                        </a>
 					</li>
-
 				</ul>
 
 				<div class="sidebar-cta">
 					<div class="sidebar-cta-content">
-						<strong class="d-inline-block mb-2">Car Wash Jo<small> v1.3.8</small></strong>
+						<strong class="d-inline-block mb-2">Nextgensoft Car Wash<small> v2.0.0</small></strong>
 						<div class="mb-3 text-sm">
 							All Rights Reserved
 						</div>
-						<a href="mailto:developer@carwash-jo.com" target="_blank" class="btn btn-outline-primary btn-block">Support</a>
+						<a href="mailto:developer@nextgensoft.co.ke" target="_blank" class="btn btn-outline-primary btn-block">Support</a>
 					</div>
 				</div>
 			</div>

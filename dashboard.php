@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <?php include 'includes/head.php';?>
+    <?php include 'url.php';?>
 <body id="body">
 	<div class="wrapper">
 		<div class="main-panel2">

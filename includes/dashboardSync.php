@@ -1,6 +1,6 @@
 <?php include '../admin/includes/dbconfig.php';
 
-$sql = "SELECT q.id, q.vehicle_type, q.status_type as 'status_type', st.name as 'status', q.owner_name, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND q.status_type != 4 ORDER BY q.status_type DESC LIMIT 24";
+$sql = "SELECT q.id, q.staff, q.status_type as 'status_type', st.name as 'status', q.owner_name, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND q.status_type != 4 ORDER BY q.status_type DESC LIMIT 24";
 
 $result = mysqli_query($con, $sql);
 
@@ -21,18 +21,9 @@ if (mysqli_num_rows($result) > 0) {
     }else if($row["status_type"] == '3'){
         $status = 'text-success';
     }
-    
-    if($row["vehicle_type"]== '1'){
-        $icon = 'fa-car';
-    }else if($row["vehicle_type"]== '2'){
-        $icon = 'fa-shuttle-van';
-    }else if($row["vehicle_type"]== '3'){
-        $icon = 'fa-taxi';
-    }else if($row["vehicle_type"]== '4'){
-        $icon = 'fa-truck';
-    }else{
-        $icon = 'fa-car';
-    }
+
+    $icon = 'fa-car';
+
     
     echo '<div class="col-sm-6 col-md-3">
         	<div class="card card-stats card-round">

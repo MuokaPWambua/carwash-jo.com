@@ -8,19 +8,19 @@
 								</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="https://www.carwash-jo.com/help">
+								<a class="nav-link" href="/help">
 									Customer Support
 								</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="https://www.carwash-jo.com/admin">
+								<a class="nav-link" href='/admin/'>
 									Admin
 								</a>
 							</li>
 						</ul>
 					</nav>
 					<div class="copyright ml-auto">
-						 Car Wash Jo &copy; <?php echo Date("Y"); ?>, made with <i class="fa fa-heart heart text-danger"></i> by <a href="https://www.w3genesis.com">W3 Genesis</a>
+						Car Wash Nextgen &copy; <?php echo Date("Y"); ?>
 					</div>				
 				</div>
 			</footer>

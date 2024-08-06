@@ -13,7 +13,7 @@
         }
         
         echo $message;
-        header("Location: https://www.carwash-jo.com/admin/view.php");
+        header("Location: /admin/view.php");
         die();
     }
 
@@ -31,27 +31,27 @@
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
-        $insert = "UPDATE queue SET status_type='".$status_type2."', owner_email='".$owner_email."', owner_name='".$owner_name."', owner_phone='".$owner_phone."', owner_address='".$owner_address."', vehicle_type='".$vehicle_type2."', vehicle_number='".$vehicle_number."', service_type='".$service_type2."' WHERE id='".$id."';";
+        $insert = "UPDATE queue SET status_type='".$status_type2."', owner_email='".$owner_email."', owner_name='".$owner_name."', owner_phone='".$owner_phone."', owner_address='".$owner_address."', staff='".$vehicle_type2."', vehicle_number='".$vehicle_number."', service_type='".$service_type2."' WHERE id='".$id."';";
         
         if(mysqli_query($con, $insert)){
             $message = "Vehicle Information Updated";
             $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='".$status_type2."' LIMIT 1");
             $id = mysqli_fetch_array($id_get);
             
-            $subject = "Car Wash Jo | Your Carwash Status - " . $id['name'] . ".";
+            $subject = "Car Wash | Your Carwash Status - " . $id['name'] . ".";
             
             $description = "The status of your carwash is " . $id['name'] . ".";
             if(sendMail($owner_email, $subject, $owner_name, $description, $vehicle_number)){
                     $message = $message . " Tracking information sent to the customer's email.";
                 }else{
-                    $message = $message . " Faild to send tracking information to the customer.";
+                    $message = $message . " Failed to send tracking information to the customer.";
                 }
         } else {
           $message = "Error: " . $sql . "<br>" . mysqli_error($con);
         }
         
         echo $message;
-        header("Location: https://www.carwash-jo.com/admin/view.php");
+        header("Location: /admin/view.php");
         die();
         
     }
@@ -59,9 +59,9 @@
 if(isset($_GET['info'])){
             $id = mysqli_real_escape_string($con, $_GET['info']);
             
-            $sql = "SELECT q.last_update, q.service_type, q.id, q.vehicle_type, q.status_type as 'status_type', st.name as 'status', q.owner_name, q.owner_address, q.owner_email, q.owner_phone, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND q.id = '".$id."'";
+            $sql = "SELECT q.last_update, q.service_type, q.id, q.staff, q.status_type as 'status_type', st.name as 'status', q.owner_name, q.owner_address, q.owner_email, q.owner_phone, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND q.id = '".$id."'";
             
-            $vehicle_typeSQL = "SELECT * FROM vehicle_type";
+            $vehicle_typeSQL = "SELECT * FROM staff";
             $vehicle_type = mysqli_query($con, $vehicle_typeSQL);
             $service_typeSQL = "SELECT * FROM service_type";
             $service_type = mysqli_query($con, $service_typeSQL);
@@ -96,7 +96,7 @@ if(isset($_GET['info'])){
                                                 while($type = mysqli_fetch_assoc($vehicle_type)) {
                                                    echo '<option'; ?>
                                                    
-                                        <?php if($track['vehicle_type'] == $type['id']){ echo 'selected';
+                                        <?php if($track['staff'] == $type['id']){ echo 'selected';
                                         }; ?>
                                                    
                                                    <?php echo ' value="'.$type["id"].'">'.$type["name"].'</option>'; 
