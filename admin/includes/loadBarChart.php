@@ -2,12 +2,13 @@
 include 'dbconfig.php';
 
 // Set the start and end dates
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-1 month')));
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d'));
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-1 day')));
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d H:i:s'));
 
 // Query to get total revenue per day with status_type = 3
 $revenue_query = "
     SELECT 
+        DATE_FORMAT(q.in_time, '%Y-%m-%d %H:00:00') AS hour,    
         DATE(q.in_time) AS date,
         COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END), 0) AS total_revenue,
         COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END), 0) AS total_commission    
@@ -18,23 +19,26 @@ $revenue_query = "
     WHERE 
         q.in_time BETWEEN '$start_date' AND '$end_date'
     GROUP BY 
-        DATE(q.in_time)
+        hour, date
     ORDER BY 
-        DATE(q.in_time) ASC";
+        hour, date ASC";
 
 $revenue_result = mysqli_query($con, $revenue_query);
 
 // Fetch the data
 $dates = [];
+$hours = [];
 $revenues = [];
 
 while ($row = mysqli_fetch_assoc($revenue_result)) {
     $dates[] = $row['date'];
+    $hours[] = $row['hour'];
     $revenues[] = $row['total_revenue'];
 }
 
 // Convert PHP arrays to JSON
 $dates_json = json_encode($dates);
+$hours_json = json_encode($hours);
 $revenues_json = json_encode($revenues);
 
 $sql = "SELECT
@@ -99,20 +103,21 @@ function js_array($array) {
                 borderWidth: 1
             }]
         },
-        options: {
-            indexAxis: 'y',
-        }
+        // options: {
+        //     // indexAxis: 'y',
+        // }
     });
 
     // Create the line chart
     var dates = <?php echo $dates_json; ?>;
+    var hours = <?php echo $hours_json; ?>;
     var revenues = <?php echo $revenues_json; ?>;
 
     var ctx2 = document.getElementById('revenueChart').getContext('2d');
     var revenueChart = new Chart(ctx2, {
         type: 'line',
         data: {
-            labels: dates,
+            labels: hours,
             datasets: [{
                 label: 'Total Revenue',
                 data: revenues,
@@ -121,27 +126,31 @@ function js_array($array) {
                 borderWidth: 1
             }]
         },
-        // options: {
-        //     scales: {
-        //         x: {
-        //             type: 'time',
-        //             time: {
-        //                 unit: 'day'
-        //             },
-        //             title: {
-        //                 display: true,
-        //                 text: 'Date'
-        //             }
-        //         },
-        //         y: {
-        //             beginAtZero: true,
-        //             title: {
-        //                 display: true,
-        //                 text: 'Revenue'
-        //             }
-        //         }
-        //     }
-        // }
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            day: 'MMM DD, YYYY'
+                        
+                        }
+                        // unit: 'day'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Revenue'
+                    }
+                }]
+            }
+        }
     });
 </script>
 

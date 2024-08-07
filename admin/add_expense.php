@@ -33,14 +33,14 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">Add New Expense</h1>
-                  <div class="row">
-                     <div class="col-12">
+                <h1 class="h3 mb-3">Add New Expense</h1>
+                <div class="row">
+                    <div class="col-12">
                         <div class="card">
-                           <div class="card-header">
-                            <h5 class="card-title mb-0"><?php echo $message; ?></h5>
-                           </div>
-                           <div class="card-body">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><?php echo $message; ?></h5>
+                            </div>
+                            <div class="card-body">
                                	<form action="" method="POST">
                                     <div class="form-row">
                                         <div class="form-group col-6">
@@ -62,7 +62,7 @@
                             </div>
                         </div>
                      </div>
-                     <div class="row">
+                     
                      <div class="col-12">
                         <div class="card">
                            <div class="card-header">
@@ -123,7 +123,7 @@
                         </div>
                      </div>
 
-                  </div>
+                
                </div>
             </main>
             <?php include 'includes/footer.php';?>
