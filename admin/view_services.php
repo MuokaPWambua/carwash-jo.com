@@ -7,9 +7,8 @@
         st.type AS service_name,
         st.service_cost AS service_cost,
         st.service_commission AS service_commission,
-        COALESCE(SUM(st.service_cost), 0) AS total_revenue,
-        COALESCE(SUM(st.service_cost * st.service_commission / 100), 0) AS total_commission
-    FROM 
+        COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END), 0) AS total_revenue,
+        COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END), 0) AS total_commission    FROM 
         service_type st
     LEFT JOIN 
         queue q ON st.id = q.service_type

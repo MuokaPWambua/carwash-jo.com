@@ -10,8 +10,8 @@
         e.employee_email AS employee_email,
         e.employee_contact AS employee_phone,
         e.employee_address AS employee_address,
-        SUM(st.service_cost) AS total_revenue,
-        SUM(st.service_cost * st.service_commission / 100) AS total_commission
+        SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END) AS total_revenue,
+        SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END) AS total_commission
     FROM 
         staff e
     LEFT JOIN 
@@ -94,7 +94,7 @@
                                 }
                                 
                                 
-                                    $icon = 'fa-car';
+                                    $icon = 'fa-user';
                                 
                                 
                                 echo '<tr>

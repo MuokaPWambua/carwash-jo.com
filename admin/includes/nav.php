@@ -16,7 +16,7 @@
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link"  href="/">
+						<a class="sidebar-link"  href="/?track">
                         <i class="align-middle" data-feather="check-circle"></i> <span class="align-middle">Status Check</span>
                         </a>
 					</li>
@@ -64,7 +64,12 @@
 					<li class="sidebar-header">
 						Reports
 					</li>
-
+					
+				    <li class="sidebar-item">
+						<a class="sidebar-link" href="add_expense.php">
+                        <i class="align-middle fa fa-edit" ></i> <span class="align-middle">Expense Reports</span>
+                        </a>
+					</li>
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="index.php">
                         <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Monthly Reports</span>
@@ -74,12 +79,6 @@
 						<a class="sidebar-link" href="index.php">
 						<i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Annual Reports</span>
 						</a>
-					</li>
-					
-				    <li class="sidebar-item">
-						<a class="sidebar-link" target="_blank" href="index.php">
-                        <i class="align-middle fa fa-edit" ></i> <span class="align-middle">Custom Reports</span>
-                        </a>
 					</li>
 					
 			        <li class="sidebar-item">

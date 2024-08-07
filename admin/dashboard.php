@@ -12,7 +12,7 @@
                      <div class="col-12">
                         <div class="card">
                            <div class="card-header">
-                              <h5 class="card-title mb-0">Vehicle Status <a class="float-right" href="https://www.carwash-jo.com/status/" target="_blank"><small>Screen Viewer <i class="align-middle mr-2" data-feather="log-in"></i></small></a></h5>
+                              <h5 class="card-title mb-0">Vehicle Status <a class="float-right" href="/status/" ><small>Screen Viewer <i class="align-middle mr-2" data-feather="log-in"></i></small></a></h5>
                            </div>
                            <div class="card-body" id="dashboard">
                            </div>

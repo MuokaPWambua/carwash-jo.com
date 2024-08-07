@@ -65,4 +65,22 @@ var myChart = new Chart(ctx, {
         indexAxis: 'y',
     }
 });
+
+var ctx2= document.getElementById('revenueChart');
+var revenueChart = new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: labelSet,
+        datasets: [{
+            label: 'TOTAL REVENUE',
+            data: dataSet,
+            backgroundColor: 'lime', 
+            borderColor: <?php echo $backgroundColor;?>,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+    }
+});
 </script>

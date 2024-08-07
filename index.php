@@ -2,6 +2,7 @@
 
 include 'admin/includes/dbconfig.php';
 include 'url.php';
+// $_SESSION["track"]=' ';
 
 if(isset($_GET['track'])){
     $id = mysqli_real_escape_string($con, $_GET['track']);
