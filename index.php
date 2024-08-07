@@ -2,7 +2,7 @@
 
 include 'admin/includes/dbconfig.php';
 include 'url.php';
-// $_SESSION["track"]=' ';
+$result = null;  // Initialize $result
 
 if(isset($_GET['track'])){
     $id = mysqli_real_escape_string($con, $_GET['track']);
@@ -114,7 +114,7 @@ if(isset($_GET['track'])){
 
 					</div>
 				</div>
-				<?php if(isset($_GET['track'])) { include 'includes/footer.php';} ?>
+				<?php  include 'includes/footer.php';?>
 			</div>
 		</div>
 	</div>

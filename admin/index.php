@@ -10,8 +10,8 @@
       // Define the query to get total revenue and commission
       $total_revenue_commission_query = "
          SELECT 
-            SUM(st.service_cost) AS total_revenue,
-            SUM(st.service_cost * st.service_commission / 100) AS total_commission
+            COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END), 0) AS total_revenue,
+            COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END), 0) AS total_commission 
          FROM 
             queue q
          LEFT JOIN 
