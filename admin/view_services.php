@@ -79,8 +79,8 @@
                                         <td>'.$row['total_revenue'].'</td>
                                         <td>'.$row['total_commission'].'</td>
                                         <td class="table-action">
-                                                    <a onclick="loadData('.$row['id'].')" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
-                                                </td>
+                                            <a onclick="loadService('.$row['service_id'].')" data-id="'.$row['service_id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
+                                        </td>
                                     </tr>';
                                 
                             ?> 

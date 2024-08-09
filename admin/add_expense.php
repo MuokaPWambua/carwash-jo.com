@@ -4,10 +4,29 @@
 
     include 'includes/head.php';
     include 'includes/functions.php';
-    $sql = "SELECT * FROM expenses GROUP BY id ORDER BY id ASC LIMIT 1000";
+            
+    $sql = "SELECT 
+        e.id AS employee_id,
+        e.name AS employee_name,
+        e.employee_status AS status_type,
+        e.employee_email AS employee_email,
+        e.employee_contact AS employee_phone,
+        e.employee_address AS employee_address,
+        SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END) AS total_revenue,
+        SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END) AS total_commission
+    FROM 
+        staff e
+    LEFT JOIN 
+        queue q ON e.id = q.staff
+    LEFT JOIN 
+        service_type st ON q.service_type = st.id
+    GROUP BY 
+        e.id, e.name, e.employee_email, e.employee_contact, e.employee_address
+    ORDER BY
+        total_revenue
+    ASC LIMIT 1000";
         
     $result = mysqli_query($con, $sql);
-    
     $message="";   
 
     if(isset($_POST['submit'])){
@@ -61,69 +80,8 @@
 								</form>
                             </div>
                         </div>
-                     </div>
-                     
-                     <div class="col-12">
-                        <div class="card">
-                           <div class="card-header">
-                              <h5 class="card-title mb-0"><?php echo $message; ?></h5>
-                           </div>
-                           <div class="card-body">
-                            <table id="example" class="table table-striped table-bordered" style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Expense Name</th>
-                                        <th>Expense Cost</th>
-                                        <th>Expense Description</th>
-                                        <th>Created At</th>
-                                        <th>Action</th>                          
-                                    </tr>
-                                </thead>
-                                <tbody>
-                            <?php
-                                if (mysqli_num_rows($result) > 0) {
-                                // output data of each row
-                                while($row = mysqli_fetch_assoc($result)) {    
-                                    echo '<tr>
-                                        <td>'.$row['id'].'</td>
-                                        <td>'.$row['expense_name'].'</td>
-                                        <td>'.$row['expense_cost'].'</td>
-                                        <td>'.$row['expense_description'].'</td>
-                                        <td>'.$row['created_at'].'</td>
-                                        <td class="table-action">
-                                                    <a onclick="loadData('.$row['id'].')" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
-                                                </td>
-                                    </tr>';
-                                
-                            ?> 
-                            
-                            <?php
-                            }
-                            } else {
-                                echo '<tr>
-                                        <td colspan="5">No Data</td>
-                                    </tr>';
-                            }
-                        ?> 
-        </tbody>
-        <tfoot>
-            <tr>
-            <th>ID</th>
-            <th>Expense Name</th>
-            <th>Expense Cost</th>
-            <th>Expense Description</th>
-            <th>Created At</th>
-            <th>Action</th>                          
-            </tr>
-        </tfoot>
-    </table>
     
-                           </div>
-                        </div>
-                     </div>
-
-                
+</div>
                </div>
             </main>
             <?php include 'includes/footer.php';?>

@@ -131,11 +131,8 @@ function js_array($array) {
                 xAxes: [{
                     type: 'time',
                     time: {
-                        displayFormats: {
-                            day: 'MMM DD, YYYY'
-                        
-                        }
-                        // unit: 'day'
+                        unit:'hour',
+                        tooltipFormat: 'YYYY-MM-DD HH:mm' 
                     },
                     title: {
                         display: true,

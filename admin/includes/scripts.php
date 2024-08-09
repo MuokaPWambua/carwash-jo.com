@@ -45,4 +45,54 @@
           $('#formData').html(data); 
         });
     }
+    function loadExpense(id){
+        $('#formData').html('<p class="text-center">Loading...</p>');
+        $.ajax({
+          url: "includes/load_expense_data.php?info="+ id + ""
+        }).done(function(data) {
+          $('#formData').html(data); 
+        });
+    }
+    function loadStaff(id){
+        $('#formData').html('<p class="text-center">Loading...</p>');
+        $.ajax({
+          url: "includes/load_staff_data.php?info="+ id + ""
+        }).done(function(data) {
+          $('#formData').html(data); 
+        });
+    }
+    function loadService(id){
+        $('#formData').html('<p class="text-center">Loading...</p>');
+        $.ajax({
+          url: "includes/load_service_data.php?info="+ id + ""
+        }).done(function(data) {
+          $('#formData').html(data); 
+        });
+    }
+
+    function loadPayments(id){
+        $('#formData').html('<p class="text-center">Loading...</p>');
+        $.ajax({
+          url: "includes/load_payments_data.php?info="+ id + ""
+        }).done(function(data) {
+          $('#formData').html(data); 
+        });
+    }
+    function loadPayment(id, pay=true){
+        $('#formData').html('<p class="text-center">Loading...</p>');
+        const url = pay? "includes/payment_form.php?pay="+ id + "" : "includes/payment_form.php?update="+ id + ""; 
+        $.ajax({
+          url: url
+        }).done(function(data) {
+          $('#formData').html(data); 
+        });
+    }
+    // function loadService(id){
+    //     $('#formData').html('<p class="text-center">Loading...</p>');
+    //     $.ajax({
+    //       url: "includes/load_service_data.php?info="+ id + ""
+    //     }).done(function(data) {
+    //       $('#formData').html(data); 
+    //     });
+    // }
 </script>

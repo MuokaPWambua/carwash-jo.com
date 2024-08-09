@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-   <?php include 'includes/head.php';
-   
+<?php 
+
+    include 'includes/head.php';
+    include 'includes/functions.php';
+
+    $staff_query = "SELECT * FROM staff";
+    $staffs = mysqli_query($con, $staff_query);
         
     $sql = "SELECT 
         e.id AS employee_id,
@@ -25,43 +30,96 @@
     ASC LIMIT 1000";
         
     $result = mysqli_query($con, $sql);
-        
-    $message="";
-    
     if(isset($_POST['submit'])){
         $message;
-        $employee_email = mysqli_real_escape_string($con, $_POST['employee_email']);
-        $employee_name = mysqli_real_escape_string($con, $_POST['employee_name']);
-        $employee_contact = mysqli_real_escape_string($con, $_POST['employee_contact']);
-        $employee_address = mysqli_real_escape_string($con, $_POST['employee_address']);
+        $service_name = mysqli_real_escape_string($con, $_POST['service_name']);
+        $service_cost = mysqli_real_escape_string($con, $_POST['service_cost']);
+        $service_commission = mysqli_real_escape_string($con, $_POST['service_commission']);
 
-        $insert = "INSERT INTO staff (employee_email, name, employee_contact, employee_address) VALUES ('$employee_email', '$employee_name', '$employee_contact', '$employee_address') ON DUPLICATE KEY UPDATE employee_email='$employee_email', name='$employee_name', employee_contact='$employee_contact', employee_address='$employee__address';";
+        $insert = "INSERT INTO service_type (type, service_cost, service_commission) VALUES ('$service_name', '$service_cost', '$service_commission') ON DUPLICATE KEY UPDATE type='$service_name', service_cost='$service_cost', service_commission='$service_commission';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Employee Information Added.";
+            $message = "Service Information Added.";
         } else {
-            $message = "Error: " . mysqli_error($conn);
+            $message = "Error: " . "<br>" . mysqli_error($conn);
         }
-
+        
     }
-            
-    ?>
+?>
     <body>
-      <div class="wrapper">
+        <div class="wrapper">
          <?php include 'includes/nav.php';?>
          <div class="main">
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">View All Staff</h1>
+                  <h1 class="h3 mb-2">Staff Reports</h1>
                   <div class="row">
                      <div class="col-12">
                         <div class="card">
                            <div class="card-header">
-                              <h5 class="card-title mb-0"><?php echo $message; ?></h5>
+                            <h5 class="card-title mb-0"><?php echo $message; ?></h5>
                            </div>
                            <div class="card-body">
-                               	<table id="example" class="table table-striped table-responsive table-bordered" style="width:100%">
+                               	<form action="" method="POST">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-3 col-sm-6 col-lg-3">
+                                            <label for="inputEmail4">Start Date</label>
+                                            <input type="date" name="start_date" class="form-control">
+                                        </div>
+                                        <div class="form-group col-md-3 col-sm-6 col-lg-3">
+                                            <label for="inputPassword4">End Date</label>
+                                            <input type="date" class="form-control" name="end_date">
+                                        </div>
+                                        <div class="form-group col-md-3 col-sm-6 col-lg-3">
+                                            <label for="inputState">Staff</label>
+                                            <select name="service_provider" class="form-control" required>
+                                                <option selected>Choose...</option>
+                                                <?php
+                                                    if (mysqli_num_rows($staffs) > 0) {
+                                                            while($type = mysqli_fetch_assoc($staffs)) {
+                                                            echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
+                                                            }      
+                                                    }
+                                                ?>
+                                            </select>            
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 col-lg-3 " style="padding-top:1.8rem;">
+                                            <button name="submit" type="submit" class="btn btn-primary w-100">Filter</button>
+                                        </div>
+                                    </div>
+                                    
+								</form>
+                            </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-12">
+                        <div class="card">
+                            <div class="card-body row text-center pt-5">
+                                <div class='col-4'>
+                                    <h2>TOTAL PAYMENT</h2>
+                                    <p class='lead'>KSH 300,000</p>
+                                </div>
+                                <div class='col-4'>
+                                    <h2>TOTAL COMMISSION</h2>
+                                    <p class='lead'>KSH 330,000</p>
+                                </div>
+                                <div class='col-4'>
+                                    <h2>TOTAL DUE</h2>
+                                    <p class='lead'>KSH 30,000</p>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+
+                  </div>
+                  <div class="row">
+                     <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                            <table id="example" class="table table-striped table-responsive table-bordered" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -108,8 +166,7 @@
                                     <td>'.$row['total_revenue'].'</td>
                                     <td>'.$row['total_commission'].'</td>
                                     <td class="table-action">
-										<a onclick="loadPayment('.$row['employee_id'].')" data-id="'.$row['employee_id'].'" type="button" class="btn col" data-toggle="modal" data-target="#deleteModal"><i class="align-middle fas fa-money-bill-wave"></i> PAY</a>
-										<a onclick="loadStaff('.$row['employee_id'].')" data-id="'.$row['employee_id'].'" type="button" class="btn col" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
+										<a onclick="loadStaff('.$row['employee_id'].')" data-id="'.$row['employee_id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
 									</td>
                                 </tr>';
                                 ?> 
@@ -120,7 +177,7 @@
                                         <td colspan="5">No Data</td>
                                     </tr>';
                             }
-                        ?> 
+                          ?> 
         </tbody>
         <tfoot>
             <tr>
@@ -136,37 +193,17 @@
             </tr>
         </tfoot>
     </table>
-    
-                           </div>
+                            </div>
                         </div>
                      </div>
+                     
                   </div>
+                                    
                </div>
             </main>
             <?php include 'includes/footer.php';?>
          </div>
       </div>
-      
-      
-      									<!-- BEGIN delete modal -->
-									<div class="modal fade deleteModal" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-										<div class="modal-dialog modal-lg" role="document">
-											<div class="modal-content">
-												<div class="modal-header">
-													<h5 class="modal-title">Update Records</h5>
-													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-												</div>
-												<div class="modal-body m-3" id="formData">
-
-												</div>
-												
-											</div>
-										</div>
-									</div>
-									<!-- END delete modal -->
-									
       <?php include 'includes/scripts.php';?>
    </body>
 </html>

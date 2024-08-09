@@ -2,7 +2,7 @@
     
 function sendMail($to, $subject, $name, $description, $id){
  
-     $from = 'Car Wash Jo <info@carwash-jo.com>';
+     $from = 'Car Wash <info@nextgensoft.co.ke>';
      
     // To send HTML mail, the Content-type header must be set
     $headers  = 'MIME-Version: 1.0' . "\r\n";
