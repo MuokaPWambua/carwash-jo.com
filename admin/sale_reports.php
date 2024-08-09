@@ -8,21 +8,12 @@
     $staff_query = "SELECT * FROM staff";
     $staffs = mysqli_query($con, $staff_query);
 
-    if(isset($_POST['submit'])){
-        $message;
-        $service_name = mysqli_real_escape_string($con, $_POST['service_name']);
-        $service_cost = mysqli_real_escape_string($con, $_POST['service_cost']);
-        $service_commission = mysqli_real_escape_string($con, $_POST['service_commission']);
+    $service_query = "SELECT * FROM service_type";
+    $service = mysqli_query($con, $service_query);
 
-        $insert = "INSERT INTO service_type (type, service_cost, service_commission) VALUES ('$service_name', '$service_cost', '$service_commission') ON DUPLICATE KEY UPDATE type='$service_name', service_cost='$service_cost', service_commission='$service_commission';";
-        
-        if(mysqli_query($con, $insert)){
-            $message = "Service Information Added.";
-        } else {
-            $message = "Error: " . "<br>" . mysqli_error($conn);
-        }
-        
-    }
+    $status_query = "SELECT * FROM status_type";
+    $status = mysqli_query($con, $status_query);
+
 ?>
     <body>
         <div class="wrapper">
@@ -31,7 +22,7 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
             <div class="container-fluid p-0">
-                <h1 class="h3 mb-2">Staff Reports</h1>
+                <h1 class="h3 mb-2">Sales Reports</h1>
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -59,9 +50,9 @@
                                             <select name="service_provider" class="form-control" required>
                                                 <option selected>Choose...</option>
                                                 <?php
-                                                    if (mysqli_num_rows($staffs) > 0) {
-                                                            while($type = mysqli_fetch_assoc($staffs)) {
-                                                            echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
+                                                    if (mysqli_num_rows($service) > 0) {
+                                                            while($type = mysqli_fetch_assoc($service)) {
+                                                            echo '<option value="'.$type["id"].'">'.$type["type"].'</option>'; 
                                                             }      
                                                     }
                                                 ?>
@@ -72,8 +63,8 @@
                                             <select name="service_provider" class="form-control" required>
                                                 <option selected>Choose...</option>
                                                 <?php
-                                                    if (mysqli_num_rows($staffs) > 0) {
-                                                            while($type = mysqli_fetch_assoc($staffs)) {
+                                                    if (mysqli_num_rows($status) > 0) {
+                                                            while($type = mysqli_fetch_assoc($status)) {
                                                             echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
                                                             }      
                                                     }
