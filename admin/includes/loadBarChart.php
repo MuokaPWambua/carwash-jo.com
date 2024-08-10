@@ -2,8 +2,8 @@
 include 'dbconfig.php';
 
 // Set the start and end dates
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-1 day')));
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d H:i:s'));
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d 00:00:00', strtotime("-1 month")));
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d 23:59:59'));
 
 // Query to get total revenue per day with status_type = 3
 $revenue_query = "
@@ -31,8 +31,8 @@ $hours = [];
 $revenues = [];
 
 while ($row = mysqli_fetch_assoc($revenue_result)) {
-    $dates[] = $row['date'];
-    $hours[] = $row['hour'];
+    $dates[] =date("M j, gA", strtotime($row['date'])) ;
+    $hours[] = date("M j, gA", strtotime($row['hour']));
     $revenues[] = $row['total_revenue'];
 }
 
@@ -132,7 +132,10 @@ function js_array($array) {
                     type: 'time',
                     time: {
                         unit:'hour',
-                        tooltipFormat: 'YYYY-MM-DD HH:mm' 
+                        tooltipFormat: 'MMM D, hA', // Tooltip format
+                        displayFormats: {
+                            hour: 'MMM D, hA' // X-axis label format
+                        }
                     },
                     title: {
                         display: true,

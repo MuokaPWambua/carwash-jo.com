@@ -5,9 +5,10 @@
     include 'includes/functions.php';
 
     // Default current date
-    $current_date = date("Y-m-d");
+    $current_date = date("Y-m-d", strtotime("-1 month"));
+    $ed=date("Y-m-d");
     $start_date = $current_date . " 00:00:00";
-    $end_date = $current_date . " 23:59:59";
+    $end_date = $ed . " 23:59:59";
 
     if (isset($_POST['submit'])) {
         // If the form is submitted, use the provided dates
@@ -16,10 +17,12 @@
         $staff_id = $_POST['staff_id'];
 
         // Modify the query to filter by staff_id if provided
-        $staff_condition = $staff_id ? "AND p.staff_id = '$staff_id'" : "";
+        $staff_condition = $staff_id ? "AND e.id = '$staff_id'" : "";
+        $staff_payment_condition = $staff_id ? "AND p.staff_id = '$staff_id'" : "";
     } else {
         // No specific staff_id, so the report will include all staff members
         $staff_condition = "";
+        $staff_payment_condition = $staff_id ? "AND p.staff_id = '$staff_id'" : "";
     }
     // Fetch staff-related payments within the selected or default time range
     $query = "SELECT 
@@ -29,7 +32,6 @@
         e.employee_email AS employee_email,
         e.employee_contact AS employee_phone,
         e.employee_address AS employee_address,
-        SUM(p.amount) AS total_payment,
         SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END) AS total_revenue,
         SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END) AS total_commission
     FROM 
@@ -37,14 +39,14 @@
     LEFT JOIN 
         queue q ON e.id = q.staff
     LEFT JOIN 
-        payments p ON e.id = p.staff_id AND p.updated_at BETWEEN '$start_date' AND '$end_date'
-    LEFT JOIN 
         service_type st ON q.service_type = st.id
+    WHERE 
+        q.in_time BETWEEN '$start_date' AND '$end_date'
     $staff_condition
     GROUP BY 
         e.id, e.name, e.employee_email, e.employee_contact, e.employee_address
     ORDER BY
-        total_revenue DESC, total_commission DESC, total_payment DESC 
+        total_revenue DESC, total_commission DESC
     LIMIT 1000";
 
     $staff_result = mysqli_query($con, $query);
@@ -58,7 +60,6 @@
     while ($row = mysqli_fetch_assoc($staff_result)) {
         $total_revenue += $row['total_revenue'];
         $total_commission += $row['total_commission'];
-        $total_payment += $row['total_payment'];
     }
 
     // Fetch payment records within the selected or default time range
@@ -73,13 +74,18 @@
         staff e ON p.staff_id = e.id
     WHERE 
         p.updated_at BETWEEN '$start_date' AND '$end_date'
-    $staff_condition
+    $staff_payment_condition
     ORDER BY 
         p.updated_at DESC, p.amount DESC 
     LIMIT 1000";
 
     $payment_result = mysqli_query($con, $payment_query);
+    // Fetch the results and calculate the totals
+    while ($row = mysqli_fetch_assoc($payment_result)) {
 
+        $total_payment += $row['payment_amount'];
+    }
+    $payment_result = mysqli_query($con, $payment_query);
     // Fetch all staff members for the dropdown
     $staff_query = "SELECT * FROM staff";
     $staffs = mysqli_query($con, $staff_query);
@@ -105,7 +111,7 @@
                                             </div>
                                             <div class="form-group col-md-3 col-sm-6 col-lg-3">
                                                 <label for="end_date">End Date</label>
-                                                <input type="date" class="form-control" name="end_date" value="<?php echo $current_date; ?>">
+                                                <input type="date" class="form-control" name="end_date" value="<?php echo $ed; ?>">
                                             </div>
                                             <div class="form-group col-md-3 col-sm-6 col-lg-3">
                                                 <label for="staff_id">Staff</label>
@@ -136,7 +142,7 @@
                             <div class="card">
                                 <div class="card-body row text-center pt-5">
                                     <div class="col-3">
-                                        <h4>TOTAL REVENUE</h4>
+                                        <h4>TOTAL SALES</h4>
                                         <p class="lead">KSH <?php echo number_format($total_revenue, 2); ?></p>
                                     </div>
                                     <div class="col-3">
@@ -149,7 +155,7 @@
                                     </div>
                                     <div class="col-3">
                                         <h4>TOTAL DUE</h4>
-                                        <p class="lead">KSH <?php echo number_format($total_payment-$total_commission, 2); ?></p>
+                                        <p class="lead">KSH <?php echo number_format($total_commission - $total_payment, 2); ?></p>
                                     </div>
 
                                 </div>

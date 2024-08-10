@@ -1,27 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-   <?php include 'includes/head.php'; ?>
-
-   <?php
+   <?php include 'includes/head.php'; 
     // Fetching payments data
-    $sql = "SELECT * FROM payments ORDER BY id ASC LIMIT 1000";
-    $result = mysqli_query($con, $sql);
+    // Default current date
+    $current_date = date("Y-m-d", strtotime("-1 month"));
+    $start_date = $current_date . " 00:00:00";
+    $ed = date("Y-m-d");
+    $end_date = $ed . " 23:59:59";
 
-    $message = "";
+    $staff_payment_condition = "";
 
-    // Handle form submission for adding a new payment
     if (isset($_POST['submit'])) {
-        $staff_id = mysqli_real_escape_string($con, $_POST['staff_id']);
-        $amount = mysqli_real_escape_string($con, $_POST['amount']);
+        // If the form is submitted, use the provided dates
+        $start_date = $_POST['start_date'] . " 00:00:00";
+        $end_date = $_POST['end_date'] . " 23:59:59";
+        $staff_id = $_POST['staff_id'];
 
-        $insert = "INSERT INTO payments (staff_id, amount) VALUES ('$staff_id', '$amount')";
-
-        if (mysqli_query($con, $insert)) {
-            $message = "Payment Information Added.";
-        } else {
-            $message = "Error: " . "<br>" . mysqli_error($con);
-        }
+        $staff_payment_condition = $staff_id ? "AND p.staff_id = '$staff_id'" : "";
     }
+
+    // Fetch payment records within the selected or default time range
+    $payment_query = "SELECT 
+        p.id AS payment_id,
+        e.name AS employee_name,
+        p.amount AS payment_amount,
+        p.updated_at AS payment_date
+    FROM 
+        payments p
+    LEFT JOIN 
+        staff e ON p.staff_id = e.id
+    WHERE 
+        p.updated_at BETWEEN '$start_date' AND '$end_date'
+    $staff_payment_condition
+    ORDER BY 
+        p.updated_at DESC, p.amount DESC 
+    LIMIT 1000";
+
+    $payment_result = mysqli_query($con, $payment_query);
+    // Fetch all staff members for the dropdown
+    $staff_query = "SELECT * FROM staff";
+    $staffs = mysqli_query($con, $staff_query);
     ?>
     <body>
         <div class="wrapper">
@@ -34,34 +52,67 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0"><?php echo $message; ?></h5>
-                                    </div>
                                     <div class="card-body">
-                                        <table id="example" class="table table-striped table-bordered" style="width:100%">
+                                    <form action="" method="POST">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-3 col-sm-6 col-lg-3">
+                                                <label for="start_date">Start Date</label>
+                                                <input type="date" name="start_date" class="form-control" value="<?php echo $current_date; ?>">
+                                            </div>
+                                            <div class="form-group col-md-3 col-sm-6 col-lg-3">
+                                                <label for="end_date">End Date</label>
+                                                <input type="date" class="form-control" name="end_date" value="<?php echo $ed; ?>">
+                                            </div>
+                                            <div class="form-group col-md-3 col-sm-6 col-lg-3">
+                                                <label for="staff_id">Staff</label>
+                                                <select name="staff_id" class="form-control">
+                                                    <option value="" selected>All Staff</option>
+                                                    <?php
+                                                    if (mysqli_num_rows($staffs) > 0) {
+                                                        while($type = mysqli_fetch_assoc($staffs)) {
+                                                            echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
+                                                        }      
+                                                    }
+                                                    ?>
+                                                </select>            
+                                            </div>
+                                            <div class="col-md-3 col-sm-6 col-lg-3 " style="padding-top:1.8rem;">
+                                                <button name="submit" type="submit" class="btn btn-primary w-100">Filter</button>
+                                            </div>
+                                        </div>
+                                    </form> 
+                                    </div>
+                                </div>
+                            <div>   
+
+                            </div>
+                            <div class='row'>
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                    <table id="example" class="table table-striped w-100 table-bordered" style="width:100%">
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Staff ID</th>
                                                     <th>Amount</th>
                                                     <th>Created At</th>
-                                                    <th>Updated At</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php
-                                                if (mysqli_num_rows($result) > 0) {
+                                                if (mysqli_num_rows($payment_result) > 0) {
                                                     // Output data of each row
-                                                    while($row = mysqli_fetch_assoc($result)) {
+                                                    while($row = mysqli_fetch_assoc($payment_result)) {
                                                         echo '<tr>
-                                                            <td>'.$row['id'].'</td>
-                                                            <td>'.$row['staff_id'].'</td>
-                                                            <td>'.$row['amount'].'</td>
-                                                            <td>'.$row['created_at'].'</td>
-                                                            <td>'.$row['updated_at'].'</td>
+                                                            <td>'.$row['payment_id'].'</td>
+                                                            <td>'.$row['employee_name'].'</td>
+                                                            <td> KSH '.number_format($row['payment_amount'], 2).'</td>
+                                                            <td>'.date("Y-m-d", strtotime($row['payment_date'])).'</td>
+                                                
                                                             <td class="table-action">
-                                                                <a onclick="loadPayment('.$row['id'].', pay=false)" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#updateModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
+                                                                <a onclick="loadPayment('.$row['payment_id'].', pay=false)" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#updateModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
                                                             </td>
                                                         </tr>';
                                                     }
@@ -75,17 +126,17 @@
                                             <tfoot>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Staff ID</th>
+                                                    <th>Staff </th>
                                                     <th>Amount</th>
                                                     <th>Created At</th>
-                                                    <th>Updated At</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </tfoot>
                                         </table>
+                                            </div>
                                     </div>
                                 </div>
-                            </div>
+                                            </div>
                         </div>
                     </div>
                 </main>

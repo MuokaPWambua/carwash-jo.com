@@ -4,12 +4,12 @@
       include 'includes/head.php';
       
       // Get the current date if no parameters are provided
-      $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d 00:00:00'));
+      $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d 00:00:00', strtotime("-1 month")));
       $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d 23:59:59'));
 
       // Define the query to get total revenue and commission
       $total_revenue_commission_query = "
-         SELECT 
+         SELECT
             COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END), 0) AS total_revenue,
             COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END), 0) AS total_commission 
          FROM 
@@ -17,8 +17,7 @@
          LEFT JOIN 
             service_type st ON q.service_type = st.id
          WHERE 
-            q.in_time BETWEEN '$start_date' AND '$end_date' 
-         AND q.status_type = 3;";
+            q.in_time BETWEEN '$start_date' AND '$end_date';";
       
       // Execute the query
       $total_res_com = mysqli_query($con, $total_revenue_commission_query);
@@ -55,15 +54,15 @@ $total_staff_result = mysqli_query($con, $total_staff_query);
 
 // Fetch the result
 if ($row = mysqli_fetch_assoc($total_staff_result)) {
-    $total_staff = $row['total_staff'];
+   $total_staff = $row['total_staff'];
 } else {
-    $total_staff = 0;
+   $total_staff = 0;
 }  
 // Define the query to get the total count of queue entries based on status type
 $total_queue_status_query = "
-    SELECT status_type, COUNT(*) AS total_count 
-    FROM queue 
-    GROUP BY status_type";
+   SELECT status_type, COUNT(*) AS total_count 
+   FROM queue 
+   GROUP BY status_type";
 
 // Execute the query
 $total_queue_status_result = mysqli_query($con, $total_queue_status_query);
@@ -73,8 +72,9 @@ $total_queue_status = array();
 
 // Fetch the results
 while ($row = mysqli_fetch_assoc($total_queue_status_result)) {
-    $total_queue_status[$row['status_type']] = $row['total_count'];
+   $total_queue_status[$row['status_type']] = $row['total_count'];
 }
+
 $completed = 0;
 $initialized = 0;
 $dispatched = 0;
