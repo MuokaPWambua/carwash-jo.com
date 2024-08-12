@@ -87,12 +87,12 @@
           $('#formData').html(data); 
         });
     }
-    // function loadService(id){
-    //     $('#formData').html('<p class="text-center">Loading...</p>');
-    //     $.ajax({
-    //       url: "includes/load_service_data.php?info="+ id + ""
-    //     }).done(function(data) {
-    //       $('#formData').html(data); 
-    //     });
-    // }
+    function loadClient(id){
+        $('#formData').html('<p class="text-center">Loading...</p>');
+        $.ajax({
+          url: "includes/load_client_data.php?info="+ id + ""
+        }).done(function(data) {
+          $('#formData').html(data); 
+        });
+    }
 </script>

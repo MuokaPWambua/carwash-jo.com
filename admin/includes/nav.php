@@ -20,7 +20,19 @@
                         <i class="align-middle" data-feather="check-circle"></i> <span class="align-middle">Status Check</span>
                         </a>
 					</li>
-
+					<li class="sidebar-header">
+						Manage Client
+					</li>
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="add_client.php">
+                            <i class="align-middle fas fa-handshake" ></i> <span class="align-middle">Add Client</span>
+                        </a>
+					</li>
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="view_clients.php">
+                            <i class="align-middle fas fa-address-book" ></i> <span class="align-middle">View Clients</span>
+                        </a>
+					</li>
 					<li class="sidebar-header">
 						Car wash
 					</li>
@@ -38,13 +50,13 @@
 					</li>
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="vehicleForm.php">
-						<i class="align-middle fas fa-car" ></i> <span class="align-middle">Add Vehicle</span>
+						<i class="align-middle fas fa-car" ></i> <span class="align-middle">Record Sale</span>
 						</a>
 					</li>
 
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="view.php">
-                        <i class="align-middle fa fa-eye"></i> <span class="align-middle">View Vehicles</span>
+                        <i class="align-middle fa fa-eye"></i> <span class="align-middle">View Sales</span>
                         </a>
 					</li>
 

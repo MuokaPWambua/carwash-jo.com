@@ -20,9 +20,7 @@
     ASC LIMIT 1000";
         
     $result = mysqli_query($con, $sql);
-        
-    $message="";   
-    
+    $message ="";
     if(isset($_POST['submit'])){
         $message;
         $service_name = mysqli_real_escape_string($con, $_POST['service_name']);
@@ -37,7 +35,7 @@
             $message = "Error: " . "<br>" . mysqli_error($conn);
         }
         
-    }            
+    }
     ?>
    <body>
       <div class="wrapper">
@@ -46,7 +44,9 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">View All Services</h1>
+                  <h1 class="h3 mb-3 float-left">View All Services</h1>
+                  <button class='btn btn-primary float-right' data-toggle="modal" data-target="#addService"> Add Service</button>
+                  <div class='clearfix'></div>
                   <div class="row">
                      <div class="col-12">
                         <div class="card">
@@ -136,7 +136,42 @@
 										</div>
 									</div>
 									<!-- END delete modal -->
+									      				<!-- BEGIN delete modal -->
+                                                          <div class="modal fade deleteModal" id="addService" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Service</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body m-3">
+                                    <form action="" method="POST">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Service Name</label>
+                                            <input type="text" name="service_name" class="form-control" placeholder="Buffing" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label for="inputPassword4">Service Cost</label>
+                                            <input type="number" class="form-control" name="service_cost" placeholder="3000" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label for="inputState">Service Commission</label>
+                                            <input type="number" class="form-control" name="service_commission" placeholder="20%" required>
+                                        </div>
+                                    </div>
+                                    
+									<button name="submit" type="submit" class="btn btn-primary">Add Service</button>
+								</form>             
+                                                       </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
 									
+
       <?php include 'includes/scripts.php';?>
    </body>
 </html>

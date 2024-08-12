@@ -55,12 +55,13 @@
             q.id, 
             q.last_update,
             q.staff, 
+            e.name as staff_name,
             q.in_time,
             q.out_time,
             st.type as 'service_type',
             q.status_type as 'status_type',
             s.name as 'status',
-            q.owner_name,
+            c.first_name as owner_name,
             q.vehicle_number,
             st.id AS service_id,
             st.type AS service_name,
@@ -74,17 +75,22 @@
             queue q ON st.id = q.service_type
         LEFT JOIN 
             status_type s ON s.id = q.status_type 
+        LEFT JOIN 
+            staff e ON e.id = q.staff 
+        LEFT JOIN 
+            clients c ON c.id = q.client_id 
         $where_clause
         GROUP BY 
             q.id, 
             q.last_update,
             q.staff, 
+            staff_name,
             q.in_time,
             q.out_time,
             st.type,
             q.status_type,
             s.name,
-            q.owner_name,
+            owner_name,
             q.vehicle_number,
             st.id,
             st.type,
@@ -96,14 +102,69 @@
     $result = mysqli_query($con, $sales_query);
     
     $message=""; 
+
     $staff_query = "SELECT * FROM staff";
-    $staffs = mysqli_query($con, $staff_query);
+    $staff_results = mysqli_query($con, $staff_query);
+    $staffs =[];
+
+    while($type = mysqli_fetch_assoc($staff_results)) {
+        $staffs[] = $type;
+    }      
 
     $service_query = "SELECT * FROM service_type";
-    $service = mysqli_query($con, $service_query);
+    $service_results = mysqli_query($con, $service_query);
+    $services =[];
+
+    while($type = mysqli_fetch_assoc($service_results)) {
+        $services[] = $type;
+    }      
 
     $status_query = "SELECT * FROM status_type";
     $status = mysqli_query($con, $status_query);   
+
+    $clients_sql = "SELECT * FROM clients";
+    $client_results = mysqli_query($con, $clients_sql);    
+    $clients = [];
+
+    while($type = mysqli_fetch_assoc($client_results)) {
+        $clients[] = $type;
+    }      
+
+
+    if(isset($_POST['submit'])){
+        $message;
+        
+        $owner_name = mysqli_real_escape_string($con, $_POST['owner_name']);
+        $staff = mysqli_real_escape_string($con, $_POST['service_provider']);
+        $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
+        $service_type2 = mysqli_escape_string($con, $_POST['service_type']);
+        $datum = new DateTime();
+        $in_time = $datum->format('Y-m-d H:i:s');
+        
+        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, service_type, in_time) VALUES ('$owner_name', '$staff', '$vehicle_number', '$service_type2', '$in_time') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', service_type='$service_type2';";
+        
+        if(mysqli_query($con, $insert)){
+            $message = "Vehicle Information Added.";
+            try{
+                $subject = "Car Wash  | Your Carwash Initialized!";
+                $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
+                $id = mysqli_fetch_array($id_get);
+                $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
+                $client = mysqli_fetch_array($clients);
+                $description = "The status of your carwash is ".$id['name'];
+                if(sendMail($client['email'], $subject, $client['name'], $description, $vehicle_number)){
+                    $message = $message . " Tracking information sent to the customer's email.";
+                }else{
+                    $message = $message . " Failed to send tracking information to the customer.";
+                }
+            }catch(Exception $e){
+                $message = $message + " Email sending failed.";
+            }
+         } else {
+            $message = "Error: " . $sql . "<br>" . mysqli_error($conn);
+         }     
+   }
+
 
     ?>
    <body>
@@ -113,7 +174,7 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">View All Vehicles</h1>
+                  <h1 class="h3 mb-3">View Sales</h1>
                   <div class="row">
                             <div class="col-12">
                                 <div class="card">
@@ -125,11 +186,9 @@
                                                     <select name="staff_id" class="form-control">
                                                         <option selected value="">Choose...</option>
                                                         <?php
-                                                        if (mysqli_num_rows($staffs) > 0) {
-                                                            while ($type = mysqli_fetch_assoc($staffs)) {
+                                                            foreach($staffs as $type) {
                                                                 echo '<option value="' . $type["id"] . '">' . $type["name"] . '</option>';
                                                             }
-                                                        }
                                                         ?>
                                                     </select>            
                                                 </div>
@@ -138,10 +197,8 @@
                                                     <select name="service_id" class="form-control">
                                                         <option selected value="">Choose...</option>
                                                         <?php
-                                                        if (mysqli_num_rows($service) > 0) {
-                                                            while ($type = mysqli_fetch_assoc($service)) {
+                                                            foreach ($services as $type) {
                                                                 echo '<option value="' . $type["id"] . '">' . $type["type"] . '</option>';
-                                                            }
                                                         }
                                                         ?>
                                                     </select>            
@@ -177,23 +234,28 @@
                                 </div>
                             </div>
                         </div>
-                  <div class="row">
+                    <button class='btn btn-primary float-right mb-4' data-toggle="modal" data-target="#addSale"> Record Sale</button>
+                    <div class='clearfix mt-3'></div>
+                    <div class="row">
                      <div class="col-12">
                         <div class="card">
                            <div class="card-header">
-                              <h5 class="card-title mb-0"><?php echo $message; ?></h5>
+                                <h5 class="card-title mb-0"><?php echo $message; ?></h5>
                            </div>
-                           <div class="card-body">
-                               	<table id="example" class="table table-striped table-bordered" style="width:100%">
+                            <div class="card-body">
+                               	<table id="example" class="table table-striped table-bordered table-responsive" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Vehicle Number</th>
-                                        <th>Owner</th>
-                                        <th>Car Wash Type</th>
+                                        <th>Client</th>
+                                        <th>Staff</th>
+                                        <th>Service</th>
+                                        <th>Amount</th>
+                                        <th>Commission</th>
                                         <th>Status</th>
-                                        <th>Registration Time</th>
-                                         <th>Last Update</th>
+                                        <th>Time In</th>
+                                        <th>Last Update</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -225,16 +287,19 @@
                                     <td>'.$row['id'].'</td>
                                     <td><i class="align-middle fa '.$icon.'"> </i> '.$row['vehicle_number'].'</td>
                                     <td>'.$row['owner_name'].'</td>
+                                    <td>'.$row['staff_name'].'</td>
                                     <td>'.$row['service_type'].'</td>
+                                    <td> KSH '.number_format($row['service_cost'], 2).'</td>
+                                    <td> '.$row['service_commission'].' %</td>
                                     <td><span class="'.$status.'">'.$row['status'].'</span></td>
-                                    <td>'.date('l jS \of F Y h:i:s A', strtotime($row['in_time'])).'</td>
-                                    <td>'.($row['last_update'] != '' ? date('l jS \of F Y h:i:s A', strtotime($row['out_time'])) : null).'</td>
+                                    <td>'.date('Y M j,  h:i A', strtotime($row['in_time'])).'</td>
+                                    <td>'.($row['last_update'] != '' ? date('Y M j,  h:i A', strtotime($row['out_time'])) : null).'</td>
                                     <td class="table-action">
 												<a onclick="loadData('.$row['id'].')" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
 											</td>
                                 </tr>';
                             
-                                  ?> 
+                                ?> 
                             
                             <?php
                               }
@@ -249,10 +314,13 @@
             <tr>
                 <th>ID</th>
                 <th>Vehicle Number</th>
-                <th>Owner</th>
-                <th>Car Wash Type</th>
+                <th>Client</th>
+                <th>Staff</th>
+                <th>Service</th>
+                <th>Amount</th>
+                <th>Commission</th>
                 <th>Status</th>
-                <th>Registration Time</th>
+                <th>In Time</th>
                 <th>Last Update</th>
                 <th>Action</th>
             </tr>
@@ -288,7 +356,77 @@
 										</div>
 									</div>
 									<!-- END delete modal -->
-									
+	      				<!-- BEGIN delete modal -->
+                          <div class="modal fade deleteModal" id="addSale" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Record Sale</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body m-3">
+                                    <form action="" method="POST">
+										<div class="form-row">
+											<div class="form-group col-md-4 col-sm-6 col-lg-4">
+												<label for="inputEmail4">Client Name</label>
+                        				<select name="owner_name"" class="form-control" required>
+                                       <option selected>Choose...</option>
+                                       <?php
+                                    
+                                        foreach($clients as $type ) {
+                                            echo '<option value="'.$type["id"].'">'.$type["first_name"].'</option>'; 
+                                        }      
+                
+                                       ?>
+                                    </select>
+                                    
+											</div>
+											<div class="form-group col-md-4 col-sm-6 col-lg-4">
+												<label for="inputPassword4">Client Vehicle Number</label>
+												<input type="text" class="form-control" name="vehicle_number" placeholder="Vehicle Number">
+											</div>
+											<div class="form-group col-md-4 col-sm-6 col-lg-4">
+												<label for="inputState">Staff</label>
+                        				<select name="service_provider" class="form-control" required>
+                                       <option selected>Choose...</option>
+                                       <?php
+                                            foreach($staffs as $type) {
+                                                echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
+                                            }      
+                                       ?>
+                                    </select>
+                        			</div>
+										</div>
+										
+										<div class="form-row">
+        	                            <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        												<label for="service_type">Service Type</label>
+                                				<select name="service_type" class="form-control">
+                                                <option selected>Choose...</option>
+                                                <?php
+                                                    foreach($services as $service) {
+                                                        echo '<option value="'.$service["id"].'">'.$service["type"].'</option>'; 
+                                                    }   
+                                                ?>
+                                          </select>
+                        					</div>
+                        											
+                        											
+											
+										</div>
+										
+							
+										<button name="submit" type="submit" class="btn btn-primary">Add Sale</button>
+									</form>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+						<!-- END delete modal -->
+								
       <?php include 'includes/scripts.php';?>
    </body>
 </html>

@@ -28,23 +28,24 @@
         
     $message="";
     
+    $message="";
+   
     if(isset($_POST['submit'])){
         $message;
         $employee_email = mysqli_real_escape_string($con, $_POST['employee_email']);
         $employee_name = mysqli_real_escape_string($con, $_POST['employee_name']);
         $employee_contact = mysqli_real_escape_string($con, $_POST['employee_contact']);
         $employee_address = mysqli_real_escape_string($con, $_POST['employee_address']);
-
-        $insert = "INSERT INTO staff (employee_email, name, employee_contact, employee_address) VALUES ('$employee_email', '$employee_name', '$employee_contact', '$employee_address') ON DUPLICATE KEY UPDATE employee_email='$employee_email', name='$employee_name', employee_contact='$employee_contact', employee_address='$employee__address';";
+    
+        $insert = "INSERT INTO staff (employee_email, name, employee_contact, employee_address) VALUES ('$employee_email', '$employee_name', '$employee_contact', '$employee_address') ON DUPLICATE KEY UPDATE employee_email='$employee_email', name='$employee_name', employee_contact='$employee_contact', employee_address='$employee_address';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Employee Information Added.";
+            $message = "Staff Information Added.";
         } else {
             $message = "Error: " . mysqli_error($conn);
         }
-
-    }
-            
+        
+    }       
     ?>
     <body>
       <div class="wrapper">
@@ -53,7 +54,9 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">View All Staff</h1>
+                  <h1 class="h3 mb-3 float-left">View All Staff</h1>
+                  <button class='btn btn-primary float-right' data-toggle="modal" data-target="#addModal"> Add Staff</button>
+                  <div class='clearfix'></div>
                   <div class="row">
                      <div class="col-12">
                         <div class="card">
@@ -108,7 +111,7 @@
                                     <td>'.$row['total_revenue'].'</td>
                                     <td>'.$row['total_commission'].'</td>
                                     <td class="table-action">
-										<a onclick="loadPayment('.$row['employee_id'].')" data-id="'.$row['employee_id'].'" type="button" class="btn col" data-toggle="modal" data-target="#deleteModal"><i class="align-middle fas fa-money-bill-wave"></i> PAY</a>
+										<a onclick="loadPayment('.$row['employee_id'].')" data-id="'.$row['employee_id'].'" type="button" class="btn col" ><i class="align-middle fas fa-money-bill-wave"></i> PAY</a>
 										<a onclick="loadStaff('.$row['employee_id'].')" data-id="'.$row['employee_id'].'" type="button" class="btn col" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
 									</td>
                                 </tr>';
@@ -166,6 +169,47 @@
 										</div>
 									</div>
 									<!-- END delete modal -->
+
+
+      				<!-- BEGIN delete modal -->
+                    <div class="modal fade deleteModal" id="addModal" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Staff</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body m-3">
+                                    <form action="" method="POST">
+										<div class="form-row">
+											<div class="form-group col-md-6">
+												<label for="inputEmail4">Staff Name</label>
+												<input type="text" name="employee_name" class="form-control" placeholder="Employee's Name" required>
+											</div>
+											<div class="form-group col-md-3">
+												<label for="inputPassword4">Staff Phone</label>
+												<input type="number" class="form-control" name="employee_contact" placeholder="2547958567829" required>
+											</div>
+											<div class="form-group col-md-3">
+												<label for="inputState">Staff Email</label>
+												<input type="email" class="form-control" name="employee_email" placeholder="email@carwash.co.ke" required>
+        									</div>
+										</div>
+										<div class="form-group">
+											<label for="owner_address">Staff Address</label>
+											<input type="text" class="form-control" name="employee_address" placeholder="carwash, nairobi, kenya"/>
+										</div>
+
+										<button name="submit" type="submit" class="btn btn-primary">Add Staff</button>
+									</form>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+						<!-- END delete modal -->
 									
       <?php include 'includes/scripts.php';?>
    </body>

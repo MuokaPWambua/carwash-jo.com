@@ -8,17 +8,32 @@
     $end_date =  $ed. " 23:59:59";
     $filter ='';
 
-    if (isset($_POST['submit'])) {
+    if (isset($_POST['filter'])) {
         // If the form is submitted, use the provided dates
         $start_date = $_POST['start_date'] . " 00:00:00";
         $end_date = $_POST['end_date'] . " 23:59:59";
         $filter = "WHERE created_at BETWEEN '$start_date' AND '$end_date'";
     }
 
-// SQL query with date filter
-$expense_query = "SELECT * FROM expenses $filter ORDER BY id ASC LIMIT 1000";
-$expense_result = mysqli_query($con, $expense_query);
+    // SQL query with date filter
+    $expense_query = "SELECT * FROM expenses $filter ORDER BY id ASC LIMIT 1000";
+    $expense_result = mysqli_query($con, $expense_query);
 
+    if(isset($_POST['submit'])){
+        $message;
+        $expense_name = mysqli_real_escape_string($con, $_POST['expense_name']);
+        $expense_cost = mysqli_real_escape_string($con, $_POST['expense_cost']);
+        $expense_description = mysqli_real_escape_string($con, $_POST['expense_description']);
+
+        $insert = "INSERT INTO expenses (expense_name, expense_cost, expense_description) VALUES ('$expense_name', '$expense_cost', '$expense_description');";
+        
+        if(mysqli_query($con, $insert)){
+            $message = "Expense Information Added.";
+        } else {
+            $message = "Error: " . "<br>" . mysqli_error($conn);
+        }
+        
+    }
 ?>
 <body>
     <div class="wrapper">
@@ -43,13 +58,18 @@ $expense_result = mysqli_query($con, $expense_query);
                                                 <input type="date" class="form-control" name="end_date" value="<?php echo isset($_POST['end_date']) ? $_POST['end_date'] : $ed; ?>">
                                             </div>
                                             <div class="col-md-4 col-sm-6 col-lg-4" style="padding-top:1.8rem;">
-                                                <button name="submit" type="submit" class="btn btn-primary w-100">Filter</button>
+                                                <button name="filter" type="submit" class="btn btn-primary w-100">Filter</button>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
+                        <div class='col-12'>
+                        <button class='btn btn-primary float-right mb-4' data-toggle="modal" data-target="#addExpense"> Add Expense</button>
+                        <div class='clearfix'></div>
+                        </div>
+
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
@@ -125,7 +145,38 @@ $expense_result = mysqli_query($con, $expense_query);
         </div>
     </div>
     <!-- END delete modal -->
-
+      				<!-- BEGIN delete modal -->
+                      <div class="modal fade deleteModal" id="addExpense" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Expense</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body m-3">
+                                    <form action="" method="POST">
+                                    <div class="form-row">
+                                        <div class="form-group col-6">
+                                            <label for="inputEmail4">Expense Name</label>
+                                            <input type="text" name="expense_name" class="form-control" placeholder="Soap" required>
+                                        </div>
+                                        <div class="form-group col-6">
+                                            <label for="inputPassword4">Expense Cost</label>
+                                            <input type="number" class="form-control" name="expense_cost" placeholder="1500" required>
+                                        </div>
+                                        <div class="form-group col-12">
+                                            <label for="inputState">Expense Description</label>
+                                            <textarea type="text" class="form-control" name="expense_description" placeholder="car washing soap 3l" required></textarea>
+                                        </div>
+                                    </div>
+                                    
+									<button name="submit" type="submit" class="btn btn-primary">Add Expense</button>
+								</form>                                    
+                                </div>
+                            </div>
+                        </div>
     <?php include 'includes/scripts.php'; ?>
 </body>
 </html>

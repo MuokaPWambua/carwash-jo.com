@@ -20,10 +20,8 @@
     if(isset($_POST['update'])){
         $message;
         $id =  mysqli_real_escape_string($con, $_POST['id']);
-        $owner_email = mysqli_real_escape_string($con, $_POST['owner_email']);
         $owner_name = mysqli_real_escape_string($con, $_POST['owner_name']);
-        $owner_phone = mysqli_real_escape_string($con, $_POST['owner_phone']);
-        $owner_address = mysqli_real_escape_string($con, $_POST['owner_address']);
+
         $vehicle_type2 = mysqli_real_escape_string($con, $_POST['vehicle_type']);
         $status_type2 = mysqli_real_escape_string($con, $_POST['status_type']);
         $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
@@ -31,7 +29,7 @@
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
-        $insert = "UPDATE queue SET status_type='".$status_type2."', owner_email='".$owner_email."', owner_name='".$owner_name."', owner_phone='".$owner_phone."', owner_address='".$owner_address."', staff='".$vehicle_type2."', vehicle_number='".$vehicle_number."', service_type='".$service_type2."' WHERE id='".$id."';";
+        $insert = "UPDATE queue SET status_type='".$status_type2."',  client_id='".$owner_name."', staff='".$vehicle_type2."', vehicle_number='".$vehicle_number."', service_type='".$service_type2."' WHERE id='".$id."';";
         
         if(mysqli_query($con, $insert)){
             $message = "Vehicle Information Updated";
@@ -59,7 +57,7 @@
 if(isset($_GET['info'])){
             $id = mysqli_real_escape_string($con, $_GET['info']);
             
-            $sql = "SELECT q.last_update, q.service_type, q.id, q.staff, q.status_type as 'status_type', st.name as 'status', q.owner_name, q.owner_address, q.owner_email, q.owner_phone, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND q.id = '".$id."'";
+            $sql = "SELECT q.last_update, q.service_type, q.id, q.staff, q.status_type as 'status_type', st.name as 'status', q.client_id, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND q.id = '".$id."'";
             
             $vehicle_typeSQL = "SELECT * FROM staff";
             $vehicle_type = mysqli_query($con, $vehicle_typeSQL);
@@ -67,7 +65,8 @@ if(isset($_GET['info'])){
             $service_type = mysqli_query($con, $service_typeSQL);
             $status_typeSQL = "SELECT * FROM status_type";
             $status_type = mysqli_query($con, $status_typeSQL);
-            
+            $clients_sql = "SELECT * FROM clients";
+            $clients = mysqli_query($con, $clients_sql);
             $result = mysqli_query($con, $sql);
             
             if (mysqli_num_rows($result) == 1) {
@@ -81,21 +80,36 @@ if(isset($_GET['info'])){
                                    	<form action="includes/loadVehicleData.php" method="POST">
 										<div class="form-row">
 											<div class="form-group col-md-6">
-												<label for="inputEmail4">Owner's Name</label>
-												<input value="<?php echo $track['owner_name']; ?>" type="text" name="owner_name" class="form-control" placeholder="Owner's Name">
+												<label for="inputEmail4">Client</label>
+                                                <select name="owner_name" class="form-control">
+                                        <?php
+                                            if (mysqli_num_rows($clients) > 0) {
+                                                while($type = mysqli_fetch_assoc($clients )) {
+                                                   echo '<option'; ?>
+                                    
+                                        <?php if($track['client_id'] == $type['id']){ echo 'selected';
+                                        }; ?>
+                                                   
+                                                   <?php echo ' value="'.$type["id"].'">'.$type["first_name"].'</option>'; 
+                                                }
+                                                
+                                            }
+                                                ?>
+                                      </select>
+                                               
 											</div>
 											<div class="form-group col-md-3">
-												<label for="inputPassword4">Vehicle Number</label>
+												<label for="inputPassword4">Client Vehicle Number</label>
 												<input value="<?php echo $track['vehicle_number']; ?>" type="text" class="form-control" name="vehicle_number" placeholder="Vehicle Number">
 											</div>
 																															<div class="form-group col-md-3">
-												<label for="inputState">Vehicle Type</label>
+												<label for="inputState">Staff</label>
                         				<select name="vehicle_type" class="form-control">
                                         <?php
                                             if (mysqli_num_rows($vehicle_type) > 0) {
                                                 while($type = mysqli_fetch_assoc($vehicle_type)) {
                                                    echo '<option'; ?>
-                                                   
+                                    
                                         <?php if($track['staff'] == $type['id']){ echo 'selected';
                                         }; ?>
                                                    
@@ -110,7 +124,7 @@ if(isset($_GET['info'])){
 										
 																				<div class="form-row">
         	                            <div class="form-group col-md-6">
-        												<label for="service_type">Car Wash Type</label>
+        												<label for="service_type">Service Type</label>
                                 				<select name="service_type" class="form-control">
                                                 <?php
                                                     if (mysqli_num_rows($service_type) > 0) {
@@ -128,23 +142,6 @@ if(isset($_GET['info'])){
                                               </select>
                         											</div>
                         											
-                        											
-											<div class="form-group col-md-4">
-												<label for="owner_email">Email (To send status updates)</label>
-										<input value="<?php echo $track['owner_email']; ?>" type="email" class="form-control" name="owner_email">
-											</div>
-											<div class="form-group col-md-2">
-												<label for="owner_phone">Phone Number</label>
-												<input value="<?php echo $track['owner_phone']; ?>" type="text" class="form-control" name="owner_phone">
-											</div>
-										</div>
-										
-										
-										<div class="form-group">
-											<label for="owner_address">Address</label>
-											<textarea type="text" class="form-control" name="owner_address" placeholder=""><?php echo $track['owner_address']; ?></textarea>
-										</div>
-										
 																				
 											<div class="row">
 												<div class="col-8">

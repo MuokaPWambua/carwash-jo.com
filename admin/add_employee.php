@@ -14,7 +14,7 @@
       $employee_contact = mysqli_real_escape_string($con, $_POST['employee_contact']);
       $employee_address = mysqli_real_escape_string($con, $_POST['employee_address']);
 
-      $insert = "INSERT INTO staff (employee_email, name, employee_contact, employee_address) VALUES ('$employee_email', '$employee_name', '$employee_contact', '$employee_address') ON DUPLICATE KEY UPDATE employee_email='$employee_email', name='$employee_name', employee_contact='$employee_contact', employee_address='$employee__address';";
+      $insert = "INSERT INTO staff (employee_email, name, employee_contact, employee_address) VALUES ('$employee_email', '$employee_name', '$employee_contact', '$employee_address') ON DUPLICATE KEY UPDATE employee_email='$employee_email', name='$employee_name', employee_contact='$employee_contact', employee_address='$employee_address';";
       
       if(mysqli_query($con, $insert)){
          $message = "Staff Information Added.";

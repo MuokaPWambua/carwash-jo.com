@@ -54,6 +54,17 @@
     }
     
     $sales_query = "SELECT 
+            q.id, 
+            q.last_update,
+            q.staff, 
+            e.name as staff_name,
+            q.in_time,
+            q.out_time,
+            st.type as 'service_type',
+            q.status_type as 'status_type',
+            s.name as 'status',
+            c.first_name as owner_name,
+            q.vehicle_number,
             st.id AS service_id,
             st.type AS service_name,
             st.service_cost AS service_cost,
@@ -64,11 +75,31 @@
             service_type st
         LEFT JOIN 
             queue q ON st.id = q.service_type
-        $where_clause
+        LEFT JOIN 
+            status_type s ON s.id = q.status_type
+        LEFT JOIN 
+            staff e ON e.id = q.staff 
+        LEFT JOIN 
+            clients c ON c.id = q.client_id
+            $where_clause
         GROUP BY 
-            st.id
+            q.id, 
+            q.last_update,
+            q.staff, 
+            staff_name,
+            q.in_time,
+            q.out_time,
+            st.type,
+            q.status_type,
+            s.name,
+            owner_name,
+            q.vehicle_number,
+            st.id,
+            st.type,
+            st.service_cost,
+            st.service_commission
         ORDER BY 
-            st.id ASC";
+            q.out_time ASC";
     
     $sales_result = mysqli_query($con, $sales_query);
 
@@ -115,6 +146,8 @@
     while ($row = mysqli_fetch_assoc($payment_result)) {
         $total_payment += $row['amount'];
     }
+    $sales_result = mysqli_query($con, $sales_query);
+
 ?>
 <html>
     <body>
@@ -194,40 +227,151 @@
                                     <div class="card-body row text-center pt-5">
                                         <div class='col-4'>
                                             <div class='row'>
-                                                <h4 class='col'>TOTAL SALES</h4>
-                                                <p class='lead col'>KSH <?php echo number_format($total_revenue, 2); ?></p>
+                                                <h5 class='col'>TOTAL SALES</h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_revenue, 2); ?></p>
                                             </div>
                                             <div class='row'>
-                                                <h4 class='col'>TOTAL EXPENSE: </h4>
-                                                <p class='lead col'>KSH <?php echo number_format($total_expense, 2); ?></p>
+                                                <h5 class='col'>TOTAL EXPENSE: </h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_expense, 2); ?></p>
                                             </div>
                                             
                                         </div>
                                         <div class='col-4'>
                                             <div class='row'>
-                                                <h4 class='col'>TOTAL COMMISSION:</h4>
-                                                <p class='lead col'>KSH <?php echo number_format($total_commission, 2); ?></p>
+                                                <h5 class='col'>TOTAL COMMISSION:</h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_commission, 2); ?></p>
                                             </div>
                                             <div class='row'>
-                                                <h4 class='col'>TOTAL PAID: </h4>
-                                                <p class='lead col'>KSH <?php echo number_format($total_payment, 2); ?></p>
+                                                <h5 class='col'>TOTAL PAID: </h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_payment, 2); ?></p>
                                             </div>
 
                                         </div>
                                         <div class='col-4'>
                                             <h4>PROFIT/LOSS </h4>
                                             <p class='text-muted'>sales - (commission paid + expense)</p>
-                                            <p class='lead'>KSH <?php echo number_format($total_revenue - ($total_payment + $total_expense), 2); ?></p>
+                                            <h5>KSH <?php echo number_format($total_revenue - ($total_payment + $total_expense), 2); ?></h5>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>                  
+                        </div> 
+                        <div class="row">
+                     <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                               	<table id="example" class="table table-striped table-bordered table-responsive" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Vehicle Number</th>
+                                        <th>Client</th>
+                                        <th>Staff</th>
+                                        <th>Service</th>
+                                        <th>Amount</th>
+                                        <th>Commission</th>
+                                        <th>Status</th>
+                                        <th>Time In</th>
+                                        <th>Last Update</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            <?php
+                            if (mysqli_num_rows($sales_result) > 0) {
+                              // output data of each row
+                              while($row = mysqli_fetch_assoc($sales_result)) {
+                                $icon = 'fa-car';
+                                $status = 'text-success';
+                                
+                                if($row["status_type"] == '2'){
+                                    $status = 'text-warning';
+                                }else if($row["status_type"] == '0'){
+                                    $status = 'text-danger';
+                                }else if($row["status_type"] == '1'){
+                                    $status = 'text-primary';
+                                }else if($row["status_type"] == '4'){
+                                    $status = 'text-alert';
+                                }else if($row["status_type"] == '3'){
+                                    $status = 'text-success';
+                                }
+                                
+                                
+                                $icon = 'fa-car';
+                                
+                                
+                                echo '<tr>
+                                    <td>'.$row['id'].'</td>
+                                    <td><i class="align-middle fa '.$icon.'"> </i> '.$row['vehicle_number'].'</td>
+                                    <td>'.$row['owner_name'].'</td>
+                                    <td>'.$row['staff_name'].'</td>
+                                    <td>'.$row['service_type'].'</td>
+                                    <td> KSH '.number_format($row['service_cost'], 2).'</td>
+                                    <td> '.$row['service_commission'] .' %</td>
+                                    <td><span class="'.$status.'">'.$row['status'].'</span></td>
+                                    <td>'.date('Y M j,  h:i A', strtotime($row['in_time'])).'</td>
+                                    <td>'.($row['last_update'] != '' ? date('Y M j,  h:i A', strtotime($row['out_time'])) : null).'</td>
+                                    <td class="table-action">
+												<a onclick="loadData('.$row['id'].')" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
+											</td>
+                                </tr>';
+                            
+                                ?> 
+                            
+                            <?php
+                              }
+                            } else {
+                                echo '<tr>
+                                        <td colspan="5">No Data</td>
+                                    </tr>';
+                            }
+                          ?> 
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>ID</th>
+                <th>Vehicle Number</th>
+                <th>Client</th>
+                <th>Staff</th>
+                <th>Service</th>
+                <th>Amount</th>
+                <th>Commission</th>
+                <th>Status</th>
+                <th>In Time</th>
+                <th>Last Update</th>
+                <th>Action</th>
+            </tr>
+        </tfoot>
+    </table>
+    
+                           </div>
+                        </div>
+                     </div>
+                  </div>
                     </div>
                 </main>
                 <?php include 'includes/footer.php'; ?>
             </div>
         </div>
+              
+      									<!-- BEGIN delete modal -->
+                                          <div class="modal fade deleteModal" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+										<div class="modal-dialog modal-lg" role="document">
+											<div class="modal-content">
+												<div class="modal-header">
+													<h5 class="modal-title">Update Records</h5>
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+												</div>
+												<div class="modal-body m-3" id="formData">
+
+												</div>
+												
+											</div>
+										</div>
+									</div>
+
         <?php include 'includes/scripts.php'; ?>
     </body>
 </html>
