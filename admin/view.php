@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-    <?php include 'includes/head.php';
-        
+<?php 
+    include 'includes/head.php';
+    include 'includes/functions.php';
+    
             // Initialize variables for filters
     $staff_filter = "";
     $service_filter = "";
@@ -16,8 +18,9 @@
     $end_date = $ed . " 23:59:59";
     
     // Check if form is submitted
-    if (isset($_POST['submit'])) {
+    if (isset($_POST['filter_sales'])) {
         $staff_id = $_POST['staff_id'] ?? '';
+        $client_id = $_POST['client_id'] ?? '';
         $service_id = $_POST['service_id'] ?? '';
         $status_id = $_POST['status_id'] ?? '';
         $start_date = $_POST['start_date'] ?? $current_date;
@@ -28,6 +31,9 @@
             $where_conditions[] = "q.staff = '$staff_id'";
             $payment_filter = "AND staff_id = '$staff_id'";
         }
+        if (!empty($client_id)) {
+            $where_conditions[] = "q.client_id = '$client_id'";
+        }    
     
         // Apply service filter
         if (!empty($service_id)) {
@@ -54,11 +60,12 @@
     $sales_query = "SELECT 
             q.id, 
             q.last_update,
-            q.staff, 
+            q.staff,
+            q.amount_paid as amount_paid,
+            q.payment_method as payment_method, 
             e.name as staff_name,
             q.in_time,
             q.out_time,
-            st.type as 'service_type',
             q.status_type as 'status_type',
             s.name as 'status',
             c.first_name as owner_name,
@@ -70,20 +77,22 @@
             COALESCE(SUM(st.service_cost), 0) AS total_revenue,
             COALESCE(SUM(st.service_cost * st.service_commission / 100), 0) AS total_commission    
         FROM 
-            service_type st
-        LEFT JOIN 
-            queue q ON st.id = q.service_type
-        LEFT JOIN 
-            status_type s ON s.id = q.status_type 
-        LEFT JOIN 
-            staff e ON e.id = q.staff 
-        LEFT JOIN 
+            queue q 
+        JOIN 
             clients c ON c.id = q.client_id 
+        JOIN 
+            service_type st ON st.id = q.service_type
+        JOIN 
+            status_type s ON s.id = q.status_type 
+        JOIN 
+            staff e ON e.id = q.staff 
         $where_clause
         GROUP BY 
             q.id, 
             q.last_update,
             q.staff, 
+            amount_paid,
+            payment_method,
             staff_name,
             q.in_time,
             q.out_time,
@@ -97,7 +106,7 @@
             st.service_cost,
             st.service_commission
         ORDER BY 
-            q.out_time ASC";
+            q.out_time DESC, q.in_time DESC";
     
     $result = mysqli_query($con, $sales_query);
     
@@ -138,13 +147,15 @@
         $staff = mysqli_real_escape_string($con, $_POST['service_provider']);
         $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
         $service_type2 = mysqli_escape_string($con, $_POST['service_type']);
+        $payment_method = mysqli_escape_string($con, $_POST['payment_method']);
+        $amount_paid =isset($_POST['amount_paid']) && !empty($_POST['amount_paid'])? mysqli_escape_string($con, $_POST['amount_paid']) : 0;
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
-        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, service_type, in_time) VALUES ('$owner_name', '$staff', '$vehicle_number', '$service_type2', '$in_time') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', service_type='$service_type2';";
-        
+        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, service_type, in_time, payment_method, amount_paid) VALUES ('$owner_name', '$staff', '$vehicle_number', '$service_type2', '$in_time', '$payment_method', '$amount_paid') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', service_type='$service_type2', payment_method='$payment_method', amount_paid='$amount_paid';";
+
         if(mysqli_query($con, $insert)){
-            $message = "Vehicle Information Added.";
+            $message = "Sale Information Added.";
             try{
                 $subject = "Car Wash  | Your Carwash Initialized!";
                 $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
@@ -152,7 +163,7 @@
                 $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
                 $client = mysqli_fetch_array($clients);
                 $description = "The status of your carwash is ".$id['name'];
-                if(sendMail($client['email'], $subject, $client['name'], $description, $vehicle_number)){
+                if(sendMail($client['email'], $subject, $client['first_name'], $description, $vehicle_number)){
                     $message = $message . " Tracking information sent to the customer's email.";
                 }else{
                     $message = $message . " Failed to send tracking information to the customer.";
@@ -166,11 +177,11 @@
    }
 
 
-    ?>
-   <body>
-      <div class="wrapper">
-         <?php include 'includes/nav.php';?>
-         <div class="main">
+?>
+    <body>
+        <div class="wrapper">
+        <?php include 'includes/nav.php';?>
+        <div class="main">
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
@@ -181,6 +192,20 @@
                                     <div class="card-body">
                                         <form action="" method="POST">
                                             <div class="form-row">
+
+                                                <div class="form-group col-md-4 col-sm-6 col-lg-4">
+                                                    <label for="inputEmail4">Client Name</label>
+                                                    <select name="client_id"" class="form-control" required>
+                                                        <option selected>Choose...</option>
+                                                        <?php
+                                                            
+                                                            foreach($clients as $type) {
+                                                                echo '<option value="'.$type["id"].'">'.$type["first_name"].'</option>'; 
+                                                            }      
+
+                                                        ?>
+                                                    </select>    
+                                                </div>
                                                 <div class="form-group col-4">
                                                     <label for="inputState">Staff</label>
                                                     <select name="staff_id" class="form-control">
@@ -226,7 +251,7 @@
                                                 </div>
 
                                                 <div class="col-4" style="padding-top:1.8rem;">
-                                                    <button name="submit" type="submit" class="btn btn-primary btn-fluid w-100">Filter</button>
+                                                    <button name="filter_sales" type="submit" class="btn btn-primary btn-fluid w-100">Filter</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -251,8 +276,11 @@
                                         <th>Client</th>
                                         <th>Staff</th>
                                         <th>Service</th>
-                                        <th>Amount</th>
-                                        <th>Commission</th>
+                                        <th>Service Commission</th>
+                                        <th>Service Cost</th>
+                                        <th>Amount Paid</th>
+                                        <th>Amount Due</th>
+                                        <th>Advance Payment</th>
                                         <th>Status</th>
                                         <th>Time In</th>
                                         <th>Last Update</th>
@@ -288,9 +316,12 @@
                                     <td><i class="align-middle fa '.$icon.'"> </i> '.$row['vehicle_number'].'</td>
                                     <td>'.$row['owner_name'].'</td>
                                     <td>'.$row['staff_name'].'</td>
-                                    <td>'.$row['service_type'].'</td>
-                                    <td> KSH '.number_format($row['service_cost'], 2).'</td>
+                                    <td>'.$row['service_name'].'</td>
                                     <td> '.$row['service_commission'].' %</td>
+                                    <td> KSH '.number_format($row['service_cost'], 2).'</td>
+                                    <td> KSH '.number_format($row['amount_paid'] , 2).'</td>
+                                    <td> KSH '.number_format($row['service_cost'] > $row['amount_paid']? $row['service_cost']-$row['amount_paid'] : 0     , 2).'</td>
+                                    <td> KSH '.number_format($row['service_cost'] < $row['amount_paid']? $row['amount_paid']-$row['service_cost'] : 0  , 2).'</td>
                                     <td><span class="'.$status.'">'.$row['status'].'</span></td>
                                     <td>'.date('Y M j,  h:i A', strtotime($row['in_time'])).'</td>
                                     <td>'.($row['last_update'] != '' ? date('Y M j,  h:i A', strtotime($row['out_time'])) : null).'</td>
@@ -307,8 +338,7 @@
                                 echo '<tr>
                                         <td colspan="5">No Data</td>
                                     </tr>';
-                            }
-                          ?> 
+                            }?> 
         </tbody>
         <tfoot>
             <tr>
@@ -317,10 +347,13 @@
                 <th>Client</th>
                 <th>Staff</th>
                 <th>Service</th>
-                <th>Amount</th>
-                <th>Commission</th>
+                <th>Service Commission</th>
+                <th>Service Cost</th>
+                <th>Amount Paid</th>
+                <th>Amount Due</th>
+                <th>Advance Payment</th>
                 <th>Status</th>
-                <th>In Time</th>
+                <th>Time In</th>
                 <th>Last Update</th>
                 <th>Action</th>
             </tr>
@@ -401,19 +434,31 @@
 										</div>
 										
 										<div class="form-row">
-        	                            <div class="form-group col-md-4 col-sm-6 col-lg-4">
-        												<label for="service_type">Service Type</label>
+        	                                <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										<label for="service_type">Service Type</label>
                                 				<select name="service_type" class="form-control">
-                                                <option selected>Choose...</option>
-                                                <?php
+                                                    <option selected>Choose...</option>
+                                                    <?php
                                                     foreach($services as $service) {
                                                         echo '<option value="'.$service["id"].'">'.$service["type"].'</option>'; 
                                                     }   
                                                 ?>
-                                          </select>
+                                                </select>
                         					</div>
                         											
-                        											
+                                            <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										<label for="service_type">Payment Method</label>
+                                				<select name="payment_method" class="form-control">
+                                                    <option selected>Choose...</option>
+                                                    <option value='mpesa'>Mpesa</option>
+                                                    <option value='cash'>Cash</option>
+                                                    <option value='card'>Card</option>
+                                                </select>
+                        				    </div>
+                                            <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        								        <label for="service_type">Amount Paid</label>
+                                                <input type='number' name='amount_paid' class="form-control" placeholder='1000'/>
+                        				    </div>						
 											
 										</div>
 										

@@ -9,8 +9,8 @@
     $ed=date("Y-m-d");
     $start_date = $current_date . " 00:00:00";
     $end_date = $ed . " 23:59:59";
-
-    if (isset($_POST['submit'])) {
+    $staff_id = null;
+    if (isset($_POST['filter'])) {
         // If the form is submitted, use the provided dates
         $start_date = $_POST['start_date'] . " 00:00:00";
         $end_date = $_POST['end_date'] . " 23:59:59";
@@ -36,9 +36,9 @@
         SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END) AS total_commission
     FROM 
         staff e
-    LEFT JOIN 
+    JOIN 
         queue q ON e.id = q.staff
-    LEFT JOIN 
+    JOIN 
         service_type st ON q.service_type = st.id
     WHERE 
         q.in_time BETWEEN '$start_date' AND '$end_date'
@@ -46,8 +46,7 @@
     GROUP BY 
         e.id, e.name, e.employee_email, e.employee_contact, e.employee_address
     ORDER BY
-        total_revenue DESC, total_commission DESC
-    LIMIT 1000";
+        total_revenue DESC, total_commission DESC";
 
     $staff_result = mysqli_query($con, $query);
 
@@ -67,6 +66,7 @@
         p.id AS payment_id,
         e.name AS employee_name,
         p.amount AS payment_amount,
+        p.payment_method AS payment_method,
         p.updated_at AS payment_date
     FROM 
         payments p
@@ -76,8 +76,7 @@
         p.updated_at BETWEEN '$start_date' AND '$end_date'
     $staff_payment_condition
     ORDER BY 
-        p.updated_at DESC, p.amount DESC 
-    LIMIT 1000";
+        p.updated_at DESC, p.amount DESC";
 
     $payment_result = mysqli_query($con, $payment_query);
     // Fetch the results and calculate the totals
@@ -98,7 +97,7 @@
             <?php include 'includes/navtop.php'; ?>
             <main class="content">
                 <div class="container-fluid p-0">
-                    <h1 class="h3 mb-2">Staff Payment Reports</h1>
+                    <h1 class="h3 mb-2">STAFF REPORT</h1>
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
@@ -120,14 +119,15 @@
                                                     <?php
                                                     if (mysqli_num_rows($staffs) > 0) {
                                                         while($type = mysqli_fetch_assoc($staffs)) {
-                                                            echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
+                                                            echo '<option value="'.$type["id"].'" '.($type["id"] == $staff_id ? 'selected' : '').'>'.$type["name"].'</option>'; 
+                                                            // echo '<option value="'.$type["id"].'">'.$type["name"].'</option>'; 
                                                         }      
                                                     }
                                                     ?>
                                                 </select>            
                                             </div>
                                             <div class="col-md-3 col-sm-6 col-lg-3 " style="padding-top:1.8rem;">
-                                                <button name="submit" type="submit" class="btn btn-primary w-100">Filter</button>
+                                                <button name="filter" type="submit" class="btn btn-primary w-100">Filter</button>
                                             </div>
                                         </div>
                                     </form>
@@ -141,23 +141,37 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body row text-center pt-5">
-                                    <div class="col-3">
-                                        <h4>TOTAL SALES</h4>
+                                    <div class="col">
+                                        <h5>TOTAL SALES</h5>
                                         <p class="lead">KSH <?php echo number_format($total_revenue, 2); ?></p>
                                     </div>
-                                    <div class="col-3">
-                                        <h4>TOTAL COMMISSION</h4>
+                                    <div class="col">
+                                        <h5>TOTAL COMMISSION</h5>
                                         <p class="lead">KSH <?php echo number_format($total_commission, 2); ?></p>
                                     </div>
-                                    <div class="col-3">
-                                        <h4>TOTAL PAYMENTS</h4>
+                                    <div class="col">
+                                        <h5>COMMISSION PAID</h5>
                                         <p class="lead">KSH <?php echo number_format($total_payment, 2); ?></p>
                                     </div>
-                                    <div class="col-3">
-                                        <h4>TOTAL DUE</h4>
-                                        <p class="lead">KSH <?php echo number_format($total_commission - $total_payment, 2); ?></p>
+                                    <div class="col">
+                                        <h5>DUE PAYMENT</h5>
+                                        <p class="lead">KSH <?php echo number_format(($total_commission - $total_payment)>0?($total_commission - $total_payment):0, 2); ?></p>
                                     </div>
-
+                                    <div class="col">
+                                        <h5>ADVANCE PAYMENT</h5>
+                                        <p class="lead">KSH <?php echo number_format(($total_commission - $total_payment)>0? 0 : ($total_payment - $total_commission ),2); ?></p>
+                                    </div>
+                                    <div class="col-12">
+                                        <?php if ($staff_id) : ?>
+                                            <button 
+                                                class='btn btn-primary'
+                                                onclick="loadPayment(<?php echo $staff_id; ?>)" 
+                                                data-toggle="modal" data-target="#updateModal">
+                                                MAKE PAYMENT
+                                            </button>
+                                        <?php endif; ?>
+                                        <!-- <button class='btn btn-primary'>MAKE PAYMENT</button> -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -174,6 +188,7 @@
                                                     <th>ID</th>
                                                     <th>Staff ID</th>
                                                     <th>Amount</th>
+                                                    <th>Payment Method</th>
                                                     <th>Created At</th>
                                                     <th>Action</th>
                                                 </tr>
@@ -187,6 +202,7 @@
                                                             <td>'.$row['payment_id'].'</td>
                                                             <td>'.$row['employee_name'].'</td>
                                                             <td> KSH '.number_format($row['payment_amount'], 2).'</td>
+                                                            <td> '.$row['payment_method'].'</td>
                                                             <td>'.date("Y-m-d", strtotime($row['payment_date'])).'</td>
                                                 
                                                             <td class="table-action">
@@ -206,6 +222,7 @@
                                                     <th>ID</th>
                                                     <th>Staff </th>
                                                     <th>Amount</th>
+                                                    <th>Payment Method</>
                                                     <th>Created At</th>
                                                     
                                                     <th>Action</th>

@@ -1,5 +1,5 @@
 <?php
-    
+include ('../../url.php');
 function sendMail($to, $subject, $name, $description, $id){
  
      $from = 'Car Wash <info@nextgensoft.co.ke>';
@@ -12,6 +12,7 @@ function sendMail($to, $subject, $name, $description, $id){
     $Body = str_replace('{{name}}', $name, $Body);
     $Body = str_replace('{{description}}', $description, $Body);
     $html = str_replace('{{id}}', $id, $Body);
+    $url = str_replace('{{url}}', $url, $Body);
 
     // Create email headers
     $headers .= 'From: '.$from."\r\n".

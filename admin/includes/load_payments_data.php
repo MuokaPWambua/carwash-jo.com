@@ -5,10 +5,9 @@
     
     $message = '';
 
-    $id =  mysqli_real_escape_string($con, $_POST['id']);
 
     if(isset($_POST['delete'])){
-        // $id = mysqli_real_escape_string($con, $_POST['delete']);
+        $id = mysqli_real_escape_string($con, $_POST['id']);
         $delete = "DELETE FROM staff WHERE id='".$id."'";
         if(mysqli_query($con, $delete)){
             $message = "Record Deleted.";
@@ -27,6 +26,7 @@
         $employee_name = mysqli_real_escape_string($con, $_POST['employee_name']);
         $employee_contact = mysqli_real_escape_string($con, $_POST['employee_contact']);
         $employee_address = mysqli_real_escape_string($con, $_POST['employee_address']);
+        $id =  mysqli_real_escape_string($con, $_POST['id']);
 
         $insert = "UPDATE staff SET employee_email='".$employee_email."', employee_contact='".$employee_contact."', employee_address='".$employee_address."', name='".$employee_name."' WHERE id='".$id."';";
         
@@ -53,7 +53,7 @@
             while($track = mysqli_fetch_assoc($result)) {
         ?> 
                 <form action="includes/load_staff_data.php" method="POST">
-                    <hr>
+            
                     
                     <input name="id" value="<?php echo $track['id']; ?>" style="visibility:hidden" />                    
                     <button name="update" type="submit" class="btn btn-success btn-lg col-4 float-right">Update</button>

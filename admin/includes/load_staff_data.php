@@ -5,10 +5,8 @@
     
     $message = '';
 
-    $id =  mysqli_real_escape_string($con, $_POST['id']);
-
     if(isset($_POST['delete'])){
-        // $id = mysqli_real_escape_string($con, $_POST['delete']);
+        $id = mysqli_real_escape_string($con, $_POST['id']);
         $delete = "DELETE FROM staff WHERE id='".$id."'";
         if(mysqli_query($con, $delete)){
             $message = "Record Deleted.";
@@ -27,8 +25,10 @@
         $employee_name = mysqli_real_escape_string($con, $_POST['employee_name']);
         $employee_contact = mysqli_real_escape_string($con, $_POST['employee_contact']);
         $employee_address = mysqli_real_escape_string($con, $_POST['employee_address']);
+        $employee_status = mysqli_real_escape_string($con, $_POST['employee_status']);
+        $id =  mysqli_real_escape_string($con, $_POST['id']);
 
-        $insert = "UPDATE staff SET employee_email='".$employee_email."', employee_contact='".$employee_contact."', employee_address='".$employee_address."', name='".$employee_name."' WHERE id='".$id."';";
+        $insert = "UPDATE staff SET employee_email='".$employee_email."', employee_contact='".$employee_contact."', employee_address='".$employee_address."', employee_status='".$employee_status."',  name='".$employee_name."' WHERE id='".$id."';";
         
         if(mysqli_query($con, $insert)){
             $message = "Staff Information Updated";
@@ -54,26 +54,34 @@
         ?> 
                 <form action="includes/load_staff_data.php" method="POST">
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="inputEmail4">Employee Name</label>
-                            <input type="text" value=<?php echo $track['name']?> name="employee_name" class="form-control" placeholder="Employee's Name" required>
+                        <div class="form-group col-6">
+                            <label for="inputEmail4">Staff Name</label>
+                            <input type="text" value=<?php echo $track['name']?> name="employee_name" class="form-control" placeholder="Staff's Name" required>
                         </div>
-                        <div class="form-group col-md-3">
-                            <label for="inputPassword4">Employee Phone</label>
+                        <div class="form-group col-6">
+                            <label for="inputPassword4">Staff Phone</label>
                             <input type="number" class="form-control" value=<?php echo $track['employee_contact']?> name="employee_contact" placeholder="2547958567829" required>
                         </div>
-                        <div class="form-group col-md-3">
-                            <label for="inputState">Employee Email</label>
+                        <div class="form-group col-12">
+                            <label for="owner_address">Staff Address</label>
+                            <input type="text" class="form-control" value=<?php echo $track['employee_address']?> name="employee_address" placeholder="carwash, nairobi, kenya"/>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="inputState">Staff Email</label>
                             <input type="email" class="form-control" value=<?php echo $track['employee_email']?> name="employee_email" placeholder="email@carwash.co.ke" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="owner_address">Employee Address</label>
-                        <input type="text" class="form-control" value=<?php echo $track['employee_address']?> name="employee_address" placeholder="carwash, nairobi, kenya"/>
-                    </div>
 
-                    <hr>
+                        <div class="form-group col-6">
+                            <label for="owner_address">Status</label>
+                            <select name='employee_status' class="form-control">                            
+                                <option <?php echo $track['employee_status'] ==''? 'selected' : ''?> value='active'>Select</option>
+                                <option <?php echo $track['employee_status'] =='active'? 'selected' : ''?> value='active'>Active</option>
+                                <option <?php echo $track['employee_status']=='unavailable'? 'selected' : ''?> value='unavailable'>Unavailable</option>
+                                <option <?php echo $track['employee_status']=='idle'? 'selected' : ''?> value='idle'>Idle</option>
+                            </select>
+                        </div>
                     
+                    </div>
                     <input name="id" value="<?php echo $track['id']; ?>" style="visibility:hidden" />                    
                     <button name="update" type="submit" class="btn btn-success btn-lg col-4 float-right">Update</button>
                     <button name="delete" type="submit" class="btn btn-danger">Delete</button>

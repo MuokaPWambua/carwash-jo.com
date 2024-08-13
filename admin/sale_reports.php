@@ -18,7 +18,8 @@
     $end_date = $ed . " 23:59:59";
     
     // Check if form is submitted
-    if (isset($_POST['submit'])) {
+    if (isset($_POST['filter_sales'])) {
+        $client_id = $_POST['client_id'] ?? '';
         $staff_id = $_POST['staff_id'] ?? '';
         $service_id = $_POST['service_id'] ?? '';
         $status_id = $_POST['status_id'] ?? '';
@@ -30,7 +31,9 @@
             $where_conditions[] = "q.staff = '$staff_id'";
             $payment_filter = "AND staff_id = '$staff_id'";
         }
-    
+        if (!empty($client_id)) {
+            $where_conditions[] = "q.client_id = '$client_id'";
+        }
         // Apply service filter
         if (!empty($service_id)) {
             $where_conditions[] = "q.service_type = '$service_id'";
@@ -57,29 +60,38 @@
             q.id, 
             q.last_update,
             q.staff, 
+            q.payment_method as payment_method,
             e.name as staff_name,
             q.in_time,
             q.out_time,
+            q.amount_paid as amount_paid,
             st.type as 'service_type',
             q.status_type as 'status_type',
             s.name as 'status',
             c.first_name as owner_name,
             q.vehicle_number,
             st.id AS service_id,
-            st.type AS service_name,
             st.service_cost AS service_cost,
             st.service_commission AS service_commission,
             COALESCE(SUM(st.service_cost), 0) AS total_revenue,
-            COALESCE(SUM(st.service_cost * st.service_commission / 100), 0) AS total_commission    
+            COALESCE(SUM(st.service_cost * st.service_commission / 100), 0) AS total_commission,
+        CASE 
+            WHEN st.service_cost - q.amount_paid > 0 THEN st.service_cost - q.amount_paid 
+            ELSE 0 
+            END AS total_due,
+        CASE 
+            WHEN q.amount_paid - st.service_cost > 0 THEN q.amount_paid - st.service_cost 
+            ELSE 0 
+            END AS total_advance  
         FROM 
             service_type st
-        LEFT JOIN 
+        JOIN 
             queue q ON st.id = q.service_type
-        LEFT JOIN 
+        JOIN 
             status_type s ON s.id = q.status_type
-        LEFT JOIN 
+        JOIN 
             staff e ON e.id = q.staff 
-        LEFT JOIN 
+        JOIN 
             clients c ON c.id = q.client_id
             $where_clause
         GROUP BY 
@@ -99,16 +111,21 @@
             st.service_cost,
             st.service_commission
         ORDER BY 
-            q.out_time ASC";
+            q.last_update DESC";
     
     $sales_result = mysqli_query($con, $sales_query);
 
     $total_revenue = 0;
     $total_commission = 0;
 
+    $total_due = 0;
+    $total_advance = 0;
+
     while ($row = mysqli_fetch_assoc($sales_result)) {
         $total_revenue += $row['total_revenue'];
         $total_commission += $row['total_commission'];
+        $total_due += $row['total_due'];
+        $total_advance += $row['total_advance'];
     }
 
     $staff_query = "SELECT * FROM staff";
@@ -147,7 +164,13 @@
         $total_payment += $row['amount'];
     }
     $sales_result = mysqli_query($con, $sales_query);
+    $clients_sql = "SELECT * FROM clients";
+    $client_results = mysqli_query($con, $clients_sql);    
+    $clients = [];
 
+    while($type = mysqli_fetch_assoc($client_results)) {
+        $clients[] = $type;
+    }
 ?>
 <html>
     <body>
@@ -157,13 +180,24 @@
                 <?php include 'includes/navtop.php'; ?>
                 <main class="content">
                     <div class="container-fluid p-0">
-                        <h1 class="h3 mb-2">Sales Reports</h1>
+                        <h1 class="h3 mb-2">SALE REPORT</h1>
                         <div class="row">
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-body">
                                         <form action="" method="POST">
                                             <div class="form-row">
+                                                <div class="form-group col-4">
+                                                    <label for="inputState">Client</label>
+                                                    <select name="client_id" class="form-control">
+                                                        <option selected value="">Choose...</option>
+                                                        <?php
+                                                            foreach ($clients as $type) {
+                                                                echo '<option value="' . $type["id"] . '">' . $type["first_name"] . '</option>';
+                                                            }
+                                                        ?>
+                                                    </select>            
+                                                </div>
                                                 <div class="form-group col-4">
                                                     <label for="inputState">Staff</label>
                                                     <select name="staff_id" class="form-control">
@@ -213,7 +247,7 @@
                                                 </div>
 
                                                 <div class="col-4" style="padding-top:1.8rem;">
-                                                    <button name="submit" type="submit" class="btn btn-primary btn-fluid w-100">Filter</button>
+                                                    <button name="filter_sales" type="submit" class="btn btn-primary btn-fluid w-100">Filter</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -231,8 +265,12 @@
                                                 <p class='text-muted col'>KSH <?php echo number_format($total_revenue, 2); ?></p>
                                             </div>
                                             <div class='row'>
-                                                <h5 class='col'>TOTAL EXPENSE: </h5>
-                                                <p class='text-muted col'>KSH <?php echo number_format($total_expense, 2); ?></p>
+                                                <h5 class='col'>SALES DUE</h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_due, 2); ?></p>
+                                            </div>
+                                            <div class='row'>
+                                                <h5 class='col'>ADVANCE SALES</h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_advance, 2); ?></p>
                                             </div>
                                             
                                         </div>
@@ -242,10 +280,13 @@
                                                 <p class='text-muted col'>KSH <?php echo number_format($total_commission, 2); ?></p>
                                             </div>
                                             <div class='row'>
-                                                <h5 class='col'>TOTAL PAID: </h5>
+                                                <h5 class='col'>COMMISSION PAID: </h5>
                                                 <p class='text-muted col'>KSH <?php echo number_format($total_payment, 2); ?></p>
                                             </div>
-
+                                            <div class='row'>
+                                                <h5 class='col'>TOTAL EXPENSE: </h5>
+                                                <p class='text-muted col'>KSH <?php echo number_format($total_expense, 2); ?></p>
+                                            </div>
                                         </div>
                                         <div class='col-4'>
                                             <h4>PROFIT/LOSS </h4>
@@ -268,8 +309,12 @@
                                         <th>Client</th>
                                         <th>Staff</th>
                                         <th>Service</th>
-                                        <th>Amount</th>
-                                        <th>Commission</th>
+                                        <th>Service Commission</th>
+                                        <th>Service Cost</th>
+                                        <th>Amount Paid</th>
+                                        <th>Amount Due</th>
+                                        <th>Advance Payment</th>
+                                        <th>Payment Method</th>
                                         <th>Status</th>
                                         <th>Time In</th>
                                         <th>Last Update</th>
@@ -306,8 +351,12 @@
                                     <td>'.$row['owner_name'].'</td>
                                     <td>'.$row['staff_name'].'</td>
                                     <td>'.$row['service_type'].'</td>
-                                    <td> KSH '.number_format($row['service_cost'], 2).'</td>
                                     <td> '.$row['service_commission'] .' %</td>
+                                    <td> KSH '.number_format($row['service_cost'], 2).'</td>
+                                    <td> KSH '.number_format($row['amount_paid'] , 2).'</td>
+                                    <td> KSH '.number_format($row['service_cost'] > $row['amount_paid']? $row['service_cost']-$row['amount_paid'] : 0     , 2).'</td>
+                                    <td> KSH '.number_format($row['service_cost'] < $row['amount_paid']? $row['amount_paid']-$row['service_cost'] : 0  , 2).'</td>
+                                    <td>'.$row['payment_method'] .' </td>
                                     <td><span class="'.$status.'">'.$row['status'].'</span></td>
                                     <td>'.date('Y M j,  h:i A', strtotime($row['in_time'])).'</td>
                                     <td>'.($row['last_update'] != '' ? date('Y M j,  h:i A', strtotime($row['out_time'])) : null).'</td>
@@ -334,10 +383,14 @@
                 <th>Client</th>
                 <th>Staff</th>
                 <th>Service</th>
-                <th>Amount</th>
-                <th>Commission</th>
+                <th>Service Commission</th>
+                <th>Service Cost</th>
+                <th>Amount Paid</th>
+                <th>Amount Due</th>
+                <th>Advance Payment</th>
+                <th>Payment Method</th>
                 <th>Status</th>
-                <th>In Time</th>
+                <th>Time In</th>
                 <th>Last Update</th>
                 <th>Action</th>
             </tr>

@@ -16,6 +16,41 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `clients`
+--
+
+DROP TABLE IF EXISTS `clients`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `clients` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `last_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `phone_number` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `city` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `state` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `postal_code` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `country` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_unique` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `clients`
+--
+
+LOCK TABLES `clients` WRITE;
+/*!40000 ALTER TABLE `clients` DISABLE KEYS */;
+INSERT INTO `clients` VALUES (2,'John Doe',NULL,'muokapwambua@gmail.com','0795826354','Kenya House, 20100, 16912 Monrovia Street, Nairobi, Kenya',NULL,NULL,NULL,NULL,'2024-08-11 22:51:36','2024-08-11 22:51:36');
+/*!40000 ALTER TABLE `clients` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `expenses`
 --
 
@@ -104,10 +139,6 @@ DROP TABLE IF EXISTS `queue`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `queue` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `owner_email` varchar(200) NOT NULL,
-  `owner_name` varchar(200) NOT NULL,
-  `owner_phone` varchar(20) NOT NULL,
-  `owner_address` varchar(250) NOT NULL,
   `staff` int NOT NULL,
   `vehicle_number` varchar(20) NOT NULL,
   `service_type` int NOT NULL,
@@ -115,10 +146,13 @@ CREATE TABLE `queue` (
   `out_time` timestamp NULL DEFAULT NULL,
   `status_type` int NOT NULL DEFAULT '1',
   `last_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `client_id` int DEFAULT NULL,
+  `amount_paid` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `payment_method` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `vehicle_number_2` (`vehicle_number`,`status_type`),
   KEY `vehicle_number` (`vehicle_number`)
-) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -127,7 +161,7 @@ CREATE TABLE `queue` (
 
 LOCK TABLES `queue` WRITE;
 /*!40000 ALTER TABLE `queue` DISABLE KEYS */;
-INSERT INTO `queue` VALUES (1,'asiriofficial@gmail.com','Asiri H','94786141343','23 Avenue, Kandy Srilanka',1,'CAK6298322',1,'2021-05-19 10:34:14','2021-06-15 03:00:27',4,'2021-06-06 19:08:10'),(2,'john@gmail.com','John C.','34786141343','23 Avenue, Kandy Armenia',1,'CAK25398344',2,'2021-06-02 10:34:04',NULL,1,'2021-06-06 19:04:13'),(3,'asiriofficial@gmail.com','Asiri H','94786141343','23 Avenue, Kandy Srilanka',2,'CAK6253983',2,'2021-06-02 06:35:37',NULL,2,'2021-06-03 15:07:31'),(4,'john@gmail.com','John C.','34786141343','23 Avenue, Kandy Armenia',4,'DE45436',4,'2021-06-02 06:35:41',NULL,4,'2021-06-03 15:07:31'),(5,'asiriofficial@gmail.com','Asiri H','94786141343','23 Avenue, Kandy Srilanka',3,'CAK62539833',3,'2021-06-02 18:25:31',NULL,0,'2021-06-03 15:07:31'),(6,'john@gmail.com','John C.','34786141343','23 Avenue, Kandy Armenia',1,'CAK253983',3,'2021-06-02 06:21:07',NULL,4,'2021-06-06 18:03:26'),(7,'asiriofficial@gmail.com','Asiri H','94786141343','23 Avenue, Kandy Srilanka',2,'CAK62539835',1,'2021-02-02 06:35:44',NULL,3,'2021-06-06 19:01:47'),(8,'john@gmail.com','John C.','34786141343','23 Avenue, Kandy Armenia',2,'CAK2539835',3,'2021-06-02 06:21:04',NULL,3,'2021-06-07 02:16:41'),(9,'john@gmail.com','John C.','34786141343','23 Avenue, Kandy Armenia',1,'CAK2539839',3,'2021-06-02 06:21:04',NULL,1,'2021-06-04 23:22:51'),(12,'foolmashi@gmail.com','John K','+94786141343','Australia',1,'AS3435',1,'2021-06-05 09:14:31',NULL,2,'2021-06-07 16:22:44'),(14,'foolmashi@gmail.com','Asiri H','+94786141343','No:1/48, Colombo',2,'AS34354',2,'2021-06-05 09:26:18',NULL,2,'2021-06-07 16:23:43'),(15,'foolmashi@gmail.com','Asiri H','+94786141343','No:1/48, Haputhale-Egodagama\r\nThalathuoya',1,'AS343533',2,'2021-06-07 22:48:43',NULL,1,'2021-06-07 12:48:43'),(16,'foolmashi@gmail.com','Asiri H','+94786141343','No:1/48, Haputhale-Egodagama\r\nThalathuoya',1,'AS3435333',2,'2021-06-07 22:55:12',NULL,1,'2021-06-07 12:55:12'),(17,'muokapwambua@gmail.com','TEST','2546799','Kenya House, 20100, 16912 Monrovia Street, Nairobi, Kenya',5,'45236789',5,'2024-08-06 14:24:26',NULL,3,'2024-08-06 16:01:33'),(18,'muokapwambua@gmail.com','New','0795826356','Kenya House, 20100, 16912 Monrovia Street, Nairobi, Kenya',5,'46763',5,'2024-08-06 19:44:17',NULL,1,'2024-08-06 19:44:17'),(19,'muokapwambua@gmail.com','New','0795826354','Kenya House, 20100, 16912 Monrovia Street, Nairobi, Kenya',5,'5678',5,'2024-08-07 14:44:16',NULL,3,'2024-08-07 15:36:00'),(20,'muokapwambua@gmail.com','test','0795826354','Kenya House, 20100, 16912 Monrovia Street, Nairobi, Kenya',5,'4567',6,'2024-08-07 14:46:00',NULL,3,'2024-08-07 15:36:27'),(21,'muokapwambua@gmail.com','james','45342323','test address',6,'231',6,'2024-08-07 14:48:54',NULL,3,'2024-08-07 15:36:14'),(22,'muokapwambua@gmail.com','TEST','0795826354',' Monrovia Street, Nairobi, Kenya',6,'456754',5,'2024-08-09 14:36:02',NULL,3,'2024-08-09 14:37:41');
+INSERT INTO `queue` VALUES (1,5,'CAK6298322',1,'2021-05-19 10:34:14','2021-06-15 03:00:27',4,'2024-08-10 14:23:52',NULL,0.00,NULL),(2,1,'CAK25398344',2,'2021-06-02 10:34:04',NULL,1,'2021-06-06 19:04:13',NULL,0.00,NULL),(3,2,'CAK6253983',2,'2021-06-02 06:35:37',NULL,2,'2021-06-03 15:07:31',NULL,0.00,NULL),(4,7,'DE45436',4,'2021-06-02 06:35:41',NULL,4,'2024-08-10 14:22:57',NULL,0.00,NULL),(5,3,'CAK62539833',3,'2021-06-02 18:25:31',NULL,0,'2021-06-03 15:07:31',NULL,0.00,NULL),(6,1,'CAK253983',3,'2021-06-02 06:21:07',NULL,4,'2021-06-06 18:03:26',NULL,0.00,NULL),(7,7,'CAK62539835',1,'2021-02-02 06:35:44',NULL,3,'2024-08-10 14:18:07',NULL,0.00,NULL),(8,2,'CAK2539835',3,'2021-06-02 06:21:04',NULL,3,'2021-06-07 02:16:41',NULL,0.00,NULL),(9,1,'CAK2539839',3,'2021-06-02 06:21:04',NULL,1,'2021-06-04 23:22:51',NULL,0.00,NULL),(12,6,'AS3435',1,'2021-06-05 09:14:31',NULL,2,'2024-08-10 14:24:05',NULL,0.00,NULL),(14,2,'AS34354',2,'2021-06-05 09:26:18',NULL,2,'2021-06-07 16:23:43',NULL,0.00,NULL),(15,1,'AS343533',2,'2021-06-07 22:48:43',NULL,1,'2021-06-07 12:48:43',NULL,0.00,NULL),(16,1,'AS3435333',2,'2021-06-07 22:55:12',NULL,1,'2021-06-07 12:55:12',NULL,0.00,NULL),(17,5,'45236789',5,'2024-08-06 14:24:26',NULL,3,'2024-08-06 16:01:33',NULL,0.00,NULL),(18,5,'46763',5,'2024-08-06 19:44:17',NULL,1,'2024-08-06 19:44:17',NULL,0.00,NULL),(19,5,'5678',5,'2024-08-07 14:44:16',NULL,3,'2024-08-07 15:36:00',NULL,0.00,NULL),(20,5,'4567',6,'2024-08-07 14:46:00',NULL,3,'2024-08-07 15:36:27',NULL,0.00,NULL),(21,6,'231',6,'2024-08-07 14:48:54',NULL,3,'2024-08-07 15:36:14',NULL,0.00,NULL),(22,6,'456754',5,'2024-08-09 14:36:02',NULL,3,'2024-08-09 14:37:41',NULL,0.00,NULL),(23,7,'45678765',1,'2024-08-11 20:31:24',NULL,3,'2024-08-12 10:30:35',2,1000.00,'mpesa');
 /*!40000 ALTER TABLE `queue` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -271,4 +305,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-08-09 23:30:04
+-- Dump completed on 2024-08-12 14:44:02

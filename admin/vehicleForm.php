@@ -14,7 +14,7 @@
     $staffs = mysqli_query($con, $staff_query);
     $clients = mysqli_query($con, $clients_sql);
     $service_type = mysqli_query($con, $service_typesql);
-    
+    $message ='';
     if(isset($_POST['submit'])){
         $message;
         
@@ -22,13 +22,15 @@
         $staff = mysqli_real_escape_string($con, $_POST['service_provider']);
         $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
         $service_type2 = mysqli_escape_string($con, $_POST['service_type']);
+        $payment_method = mysqli_escape_string($con, $_POST['payment_method']);
+        $amount_paid = isset($_POST['amount_paid']) && !empty($_POST['amount_paid'])? mysqli_escape_string($con, $_POST['amount_paid']) : 0 ;
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
-        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, service_type, in_time) VALUES ('$owner_name', '$staff', '$vehicle_number', '$service_type2', '$in_time') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', service_type='$service_type2';";
+        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, service_type, in_time, payment_method, amount_paid) VALUES ('$owner_name', '$staff', '$vehicle_number', '$service_type2', '$in_time', '$payment_method', '$amount_paid') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', service_type='$service_type2', payment_method='$payment_method', amount_paid='$amount_paid';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Vehicle Information Added.";
+            $message = "Sale Information Added.";
             try{
                 $subject = "Car Wash  | Your Carwash Initialized!";
                 $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
@@ -36,7 +38,7 @@
                 $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
                 $client = mysqli_fetch_array($clients);
                 $description = "The status of your carwash is ".$id['name'];
-                if(sendMail($client['email'], $subject, $client['name'], $description, $vehicle_number)){
+                if(sendMail($client['email'], $subject, $client['first_name'], $description, $vehicle_number)){
                     $message = $message . " Tracking information sent to the customer's email.";
                 }else{
                     $message = $message . " Failed to send tracking information to the customer.";
@@ -82,7 +84,7 @@
 											</div>
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
 												<label for="inputPassword4">Client Vehicle Number</label>
-												<input type="text" class="form-control" name="vehicle_number" placeholder="Vehicle Number">
+												<input type="text" class="form-control" name="vehicle_number" placeholder="Vehicle Number" required>
 											</div>
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
 												<label for="inputState">Staff</label>
@@ -100,9 +102,9 @@
 										</div>
 										
 										<div class="form-row">
-        	                            <div class="form-group col-md-4 col-sm-6 col-lg-4">
-        												<label for="service_type">Service Type</label>
-                                				<select name="service_type" class="form-control">
+        	                           <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										  	<label for="service_type">Service Type</label>
+                                				<select name="service_type" class="form-control" required>
                                                 <option selected>Choose...</option>
                                                 <?php
                                                    if (mysqli_num_rows($service_type) > 0) {
@@ -112,9 +114,20 @@
                                                    }
                                                 ?>
                                           </select>
-                        					</div>
-                        											
-                        											
+                        				</div>
+                                    <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										  	<label for="service_type">Payment Method</label>
+                                				<select name="payment_method" class="form-control">
+                                             <option selected>Choose...</option>
+                                             <option value='mpesa'>Mpesa</option>
+                                             <option value='cash'>Cash</option>
+                                             <option value='card'>Card</option>
+                                          </select>
+                        				</div>
+                                    <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										  	<label for="service_type">Amount Paid</label>
+                                       <input type='number' name='amount_paid' class="form-control" placeholder='1000'/>
+                        				</div>
 											
 										</div>
 										

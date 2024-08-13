@@ -8,7 +8,7 @@
     $end_date =  $ed. " 23:59:59";
     $filter ='';
 
-    if (isset($_POST['filter'])) {
+    if (isset($_POST['filter_expense'])) {
         // If the form is submitted, use the provided dates
         $start_date = $_POST['start_date'] . " 00:00:00";
         $end_date = $_POST['end_date'] . " 23:59:59";
@@ -58,7 +58,7 @@
                                                 <input type="date" class="form-control" name="end_date" value="<?php echo isset($_POST['end_date']) ? $_POST['end_date'] : $ed; ?>">
                                             </div>
                                             <div class="col-md-4 col-sm-6 col-lg-4" style="padding-top:1.8rem;">
-                                                <button name="filter" type="submit" class="btn btn-primary w-100">Filter</button>
+                                                <button name="filter_expense" type="submit" class="btn btn-primary w-100">Filter</button>
                                             </div>
                                         </div>
                                     </form>

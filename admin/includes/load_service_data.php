@@ -5,10 +5,9 @@
     
     $message = '';
 
-    $id =  mysqli_real_escape_string($con, $_POST['id']);
 
     if(isset($_POST['delete'])){
-        // $id = mysqli_real_escape_string($con, $_POST['delete']);
+        $id = mysqli_real_escape_string($con, $_POST['id']);
         $delete = "DELETE FROM service_type WHERE id='".$id."'";
         if(mysqli_query($con, $delete)){
             $message = "Record Deleted.";
@@ -26,6 +25,7 @@
         $service_name = mysqli_real_escape_string($con, $_POST['service_name']);
         $service_cost = mysqli_real_escape_string($con, $_POST['service_cost']);
         $service_commission = mysqli_real_escape_string($con, $_POST['service_commission']);
+        $id =  mysqli_real_escape_string($con, $_POST['id']);
 
         $insert = "UPDATE service_type SET type='".$service_name."', service_cost='".$service_cost."', service_commission='".$service_commission."' WHERE id='".$id."';";
         
@@ -66,8 +66,6 @@
                         <input type="number" value="<?php echo $track['service_commission']?>" class="form-control" name="service_commission" placeholder="20%" required>
                     </div>
                 </div>
-
-                <hr>
                 
                 <input name="id" value="<?php echo $track['id']; ?>" style="visibility:hidden" />                    
                 <button name="update" type="submit" class="btn btn-success btn-lg col-4 float-right">Update</button>

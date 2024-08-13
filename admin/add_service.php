@@ -4,7 +4,7 @@
 
     include 'includes/head.php';
     include 'includes/functions.php';
-
+    $message ='';
     if(isset($_POST['submit'])){
         $message;
         $service_name = mysqli_real_escape_string($con, $_POST['service_name']);

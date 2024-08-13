@@ -10,7 +10,7 @@
 
     $staff_payment_condition = "";
 
-    if (isset($_POST['submit'])) {
+    if (isset($_POST['filter_payments'])) {
         // If the form is submitted, use the provided dates
         $start_date = $_POST['start_date'] . " 00:00:00";
         $end_date = $_POST['end_date'] . " 23:59:59";
@@ -27,14 +27,13 @@
         p.updated_at AS payment_date
     FROM 
         payments p
-    LEFT JOIN 
+    JOIN 
         staff e ON p.staff_id = e.id
     WHERE 
         p.updated_at BETWEEN '$start_date' AND '$end_date'
     $staff_payment_condition
     ORDER BY 
-        p.updated_at DESC, p.amount DESC 
-    LIMIT 1000";
+        p.updated_at DESC, p.amount DESC";
 
     $payment_result = mysqli_query($con, $payment_query);
     // Fetch all staff members for the dropdown
@@ -77,7 +76,7 @@
                                                 </select>            
                                             </div>
                                             <div class="col-md-3 col-sm-6 col-lg-3 " style="padding-top:1.8rem;">
-                                                <button name="submit" type="submit" class="btn btn-primary w-100">Filter</button>
+                                                <button name="filter_payments" type="submit" class="btn btn-primary w-100">Filter</button>
                                             </div>
                                         </div>
                                     </form> 
@@ -112,7 +111,7 @@
                                                             <td>'.date("Y-m-d", strtotime($row['payment_date'])).'</td>
                                                 
                                                             <td class="table-action">
-                                                                <a onclick="loadPayment('.$row['payment_id'].', pay=false)" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#updateModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
+                                                                <a onclick="loadPayment('.$row['payment_id'].', pay=false)" data-id="'.$row['payment_id'].'" type="button" class="btn" data-toggle="modal" data-target="#updateModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
                                                             </td>
                                                         </tr>';
                                                     }

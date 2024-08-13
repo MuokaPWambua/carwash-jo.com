@@ -1,32 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
    <?php include 'includes/head.php';
+      
+   $sql = "SELECT * FROM clients"; 
+
+   $result = mysqli_query($con, $sql);  
+   $message="";
    
-        
-    $sql = "SELECT * FROM clients"; 
-    
-    $result = mysqli_query($con, $sql);
-        
-    $message="";
-   
-    if(isset($_POST['submit'])){
-       $message;
-       $client_email = mysqli_real_escape_string($con, $_POST['client_email']);
-       $client_name = mysqli_real_escape_string($con, $_POST['client_name']);
-       $client_contact = mysqli_real_escape_string($con, $_POST['client_contact']);
-       $client_address = mysqli_real_escape_string($con, $_POST['client_address']);
- 
-       $insert = "INSERT INTO clients (email, first_name, phone_number, address) VALUES ('$client_email', '$client_name', '$client_contact', '$client_address') ON DUPLICATE KEY UPDATE email='$client_email', first_name='$client_name', phone_number='$client_contact', address='$client_address';";
-       
-       if(mysqli_query($con, $insert)){
-          $message = "Client Information Added.";
-       } else {
-          $message = "Error: " . mysqli_error($conn);
-       }
-       
-    }         
-    ?>
-    <body>
+   if(isset($_POST['submit'])){
+      $message;
+      $client_email = mysqli_real_escape_string($con, $_POST['client_email']);
+      $client_name = mysqli_real_escape_string($con, $_POST['client_name']);
+      $client_contact = mysqli_real_escape_string($con, $_POST['client_contact']);
+      $client_address = mysqli_real_escape_string($con, $_POST['client_address']);
+
+      $insert = "INSERT INTO clients (email, first_name, phone_number, address) VALUES ('$client_email', '$client_name', '$client_contact', '$client_address') ON DUPLICATE KEY UPDATE email='$client_email', first_name='$client_name', phone_number='$client_contact', address='$client_address';";
+      
+      if(mysqli_query($con, $insert)){
+         $message = "Client Information Added.";
+      } else {
+         $message = "Error: " . mysqli_error($conn);
+      }
+   }         
+   ?>
+   <body>
       <div class="wrapper">
          <?php include 'includes/nav.php';?>
          <div class="main">

@@ -16,7 +16,7 @@
         }
         
         echo $message;
-        header("Location: /admin/view_payments.php");
+        header("Location: /admin//staff_reports.php");
         die();
     }
 
@@ -24,8 +24,9 @@
         $message;
         $staff_id =  mysqli_real_escape_string($con, $_POST['staff_id']);
         $amount = mysqli_real_escape_string($con, $_POST['amount']);
+        $payment_method = mysqli_real_escape_string($con, $_POST['payment_method']);
 
-        $insert = "INSERT INTO payments (staff_id, amount) VALUES ('$staff_id', '$amount');";
+        $insert = "INSERT INTO payments (staff_id, amount, payment_method) VALUES ('$staff_id', '$amount', '$payment_method');";
 
         if(mysqli_query($con, $insert)){
             $message = "Payment Information added";
@@ -34,7 +35,7 @@
         }
         
         echo $message;
-        header("Location: /admin/view_payments.php");
+        header("Location: /admin/staff_reports.php");
         die();
     }
 
@@ -42,8 +43,9 @@
         $message;
         $id =  mysqli_real_escape_string($con, $_POST['payment_id']);
         $amount = mysqli_real_escape_string($con, $_POST['amount']);
+        $payment_method = mysqli_real_escape_string($con, $_POST['payment_method']);
 
-        $insert = "UPDATE payments SET amount='".$amount."' WHERE id='".$id."';";
+        $insert = "UPDATE payments SET amount='".$amount."', payment_method='".$payment_method."' WHERE id='".$id."';";
         
         if(mysqli_query($con, $insert)){
             $message = "Payment Information Updated";
@@ -52,7 +54,7 @@
         }
         
         echo $message;
-        header("Location: /admin/view_payments.php");
+        header("Location: /admin/staff_reports.php");
         die();
         
     }
@@ -75,7 +77,11 @@
         <div class="form-group">
             <label for="inputPassword4">Pay Amount</label>
             <?php if($result){
-                while($track = mysqli_fetch_assoc($result)){ ?>
+                $existing_payment_method = ''; // Initialize variable
+
+                while($track = mysqli_fetch_assoc($result)){ 
+                    $existing_payment_method = $track['payment_method'];     
+                ?>
                     <input type="number" value="<?php echo $track['amount']?>" class="form-control"  name="amount" required>
                 <?php
                 }
@@ -83,13 +89,23 @@
                 <input type="number" class="form-control"  name="amount" placeholder="1500" required>
             <?php } ?>
         </div>
-        <input name="staff_id" value="<?php echo $_GET['pay']; ?>" style="visibility:hidden" />                    
-        <input name="payment_id" value="<?php echo $_GET['update']; ?>" style="visibility:hidden" />                    
+        <div class="form-group">
+            <label for="payment_method">Payment Method</label>
+            <select name="payment_method" class="form-control" required>
+                <option value="" disabled>Select a method</option>
+                <option value="cash" <?php echo ($existing_payment_method == 'cash') ? 'selected' : ''; ?>>Cash</option>
+                <option value="credit_card" <?php echo ($existing_payment_method == 'credit_card') ? 'selected' : ''; ?>>Credit Card</option>
+                <option value="bank_transfer" <?php echo ($existing_payment_method == 'bank_transfer') ? 'selected' : ''; ?>>Bank Transfer</option>
+            </select>
+        </div>               
     </div>
     <?php if(isset($_GET['pay'])){?>
+        <input name="staff_id" value="<?php echo $_GET['pay']; ?>" style="visibility:hidden" />
         <button name="pay" type="submit" class="btn btn-lg w-100 btn-success">Pay</button>
     <?php }?>
     <?php if(isset($_GET['update'])){?>
+        <input name="payment_id" value="<?php echo isset($_GET['update']) ; ?>" style="visibility:hidden" />                    
+
         <div class='row'>
             <div class='col'>
                 <button name="update" type="submit" class="btn btn-lg w-100 btn-success">Update</button>

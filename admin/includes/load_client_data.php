@@ -5,10 +5,9 @@
     
     $message = '';
 
-    $id =  mysqli_real_escape_string($con, $_POST['id']);
 
     if(isset($_POST['delete'])){
-        // $id = mysqli_real_escape_string($con, $_POST['delete']);
+        $id = mysqli_real_escape_string($con, $_POST['id']);
         $delete = "DELETE FROM clients WHERE id='".$id."'";
         if(mysqli_query($con, $delete)){
             $message = "Record Deleted.";
@@ -27,6 +26,7 @@
         $client_name = mysqli_real_escape_string($con, $_POST['client_name']);
         $client_contact = mysqli_real_escape_string($con, $_POST['client_contact']);
         $client_address = mysqli_real_escape_string($con, $_POST['client_address']);
+        $id = mysqli_real_escape_string($con, $_POST['id']);
 
         $insert = "UPDATE clients SET email='".$client_email."', phone_number='".$client_contact."', address='".$client_address."', first_name='".$client_name."' WHERE id='".$id."';";
         
@@ -71,8 +71,6 @@
                         <label for="owner_address">Client Address</label>
                         <input type="text" class="form-control" value=<?php echo $track['address']?> name="client_address" placeholder="carwash, nairobi, kenya"/>
                     </div>
-
-                    <hr>
                     
                     <input name="id" value="<?php echo $track['id']; ?>" style="visibility:hidden" />                    
                     <button name="update" type="submit" class="btn btn-success btn-lg col-4 float-right">Update</button>

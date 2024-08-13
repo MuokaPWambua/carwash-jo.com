@@ -33,6 +33,33 @@
                             <i class="align-middle fas fa-address-book" ></i> <span class="align-middle">View Clients</span>
                         </a>
 					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="sale_reports.php">
+                        <i class="align-middle fas fa-chart-line" ></i> <span class="align-middle">Sale Reports</span>
+                        </a>
+					</li>
+
+					<li class="sidebar-header">
+						Manage Staff
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="add_employee.php">
+                            <i class="align-middle fas fa-user-plus" ></i> <span class="align-middle">Add Staff</span>
+                        </a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="view_employees.php">
+                        <i class="align-middle fas fa-users"></i><span class="align-middle">View Staffs</span>
+                        </a>
+					</li>
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="staff_reports.php">
+                            <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Staff Reports</span>
+                        </a>
+					</li>
 					<li class="sidebar-header">
 						Car wash
 					</li>
@@ -54,11 +81,11 @@
 						</a>
 					</li>
 
-					<li class="sidebar-item">
+					<!-- <li class="sidebar-item">
 						<a class="sidebar-link" href="view.php">
                         <i class="align-middle fa fa-eye"></i> <span class="align-middle">View Sales</span>
                         </a>
-					</li>
+					</li> -->
 
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="view_services.php">
@@ -71,43 +98,18 @@
                         </a>
 					</li>
 
-					<li class="sidebar-header">
-						Manage Staff
-					</li>
 
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="add_employee.php">
-                            <i class="align-middle fas fa-user-plus" ></i> <span class="align-middle">Add Staff</span>
-                        </a>
-					</li>
-
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="view_employees.php">
-                        <i class="align-middle fas fa-users"></i><span class="align-middle">View Staffs</span>
-                        </a>
-					</li>
-
-					<li class="sidebar-item">
+					<!-- <li class="sidebar-item">
 						<a class="sidebar-link" href="view_payments.php">
                         <i class="align-middle fa fa-money-bill"></i> <span class="align-middle">View Payments</span>
                         </a>
-					</li>
+					</li> -->
 
 
 					<li class="sidebar-header">
-						Reports
+						System
 					</li>
-					
-				    <li class="sidebar-item">
-						<a class="sidebar-link" href="sale_reports.php">
-                        <i class="align-middle fas fa-chart-line" ></i> <span class="align-middle">Sale Reports</span>
-                        </a>
-					</li>
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="staff_reports.php">
-                            <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Staff Reports</span>
-                        </a>
-					</li>
+
 			        <li class="sidebar-item">
 						<a class="sidebar-link" href="updateNotifications.php">
                         <i class="align-middle fa fa-volume-up" ></i> <span class="align-middle">Update Notifications</span>
