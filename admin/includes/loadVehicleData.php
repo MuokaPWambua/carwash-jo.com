@@ -27,7 +27,7 @@
         $payment_method = mysqli_real_escape_string($con, $_POST['payment_method']);
         $amount_paid = mysqli_real_escape_string($con, $_POST['amount_paid']);
         $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
-        $service_type2 = mysqli_escape_string($con, $_POST['service_type']);
+        $service_type2 = $_POST['service_type'];
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
@@ -35,10 +35,18 @@
         $queue = mysqli_fetch_array($queue_query);
         $amount_paid = $queue['amount_paid'] + $amount_paid;
 
-        $insert = "UPDATE queue SET status_type='".$status_type2."',  payment_method='".$payment_method."', amount_paid='".$amount_paid."', client_id='".$owner_name."', staff='".$vehicle_type2."', vehicle_number='".$vehicle_number."', service_type='".$service_type2."' WHERE id='".$id."';";
+        $insert = "UPDATE queue SET status_type='".$status_type2."',  payment_method='".$payment_method."', amount_paid='".$amount_paid."', client_id='".$owner_name."', staff='".$vehicle_type2."', vehicle_number='".$vehicle_number."' WHERE id='".$id."';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Vehicle Information Updated";
+            $queue_id = mysqli_insert_id($conn);
+            if (isset($_POST['service_type'])) {
+                foreach($service_type2 as $service_type_id){
+                   $service_assignment = "INSERT INTO service_assignment (service_type_id, staff_id, client_id, queue_id) VALUE ('$service_type_id','$staff','$owner_name', '$queue_id');";
+                   mysqli_query($conn, $service_assignment); 
+                }
+            }
+            $message = "Sale Information Added.";
+
             $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='".$status_type2."' LIMIT 1");
             $id = mysqli_fetch_array($id_get);
             $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
@@ -124,7 +132,7 @@ if(isset($_GET['info'])){
                     <div class="form-row">
                         <div class="form-group col-md-4 col-sm-6 col-lg-4 col-sm-6">
                             <label for="service_type">Service Type</label>
-                            <select name="service_type" class="form-control">
+                            <select name="service_type[]" multiple class="form-control">
                                 <?php
                                     if (mysqli_num_rows($service_type) > 0) {
                                         while($servicetype = mysqli_fetch_assoc($service_type)) {
@@ -141,7 +149,7 @@ if(isset($_GET['info'])){
                         <div class="form-group col-md-4 col-sm-6 col-lg-4">
                             <label for="service_type">Payment Method</label>
                             <select name="payment_method" class="form-control">
-                                <option <?php echo $track['payment_method']==''?   "selected" : "" ; ?>>Choose...</option>
+                                <option <?php echo $track['payment_method']==''?   "selected disabled" : "" ; ?>>Choose...</option>
                                 <option <?php echo $track['payment_method']=='mpesa'?   "selected" : "" ; ?> value='mpesa'>Mpesa</option>
                                 <option <?php echo $track['payment_method']=='cash'?   "selected" : "" ; ?> value='cash'>Cash</option>
                                 <option <?php echo $track['payment_method']=='card'?   "selected" : "" ; ?> value='card'>Card</option>

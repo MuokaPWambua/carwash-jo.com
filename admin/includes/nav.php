@@ -63,33 +63,25 @@
 					<li class="sidebar-header">
 						Car wash
 					</li>
-
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="add_service.php">
-                            <i class="align-middle fas fa-cogs" ></i> <span class="align-middle">Add Service</span>
-                        </a>
-					</li>
-
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="add_expense.php">
-                            <i class="align-middle fas fa-edit" ></i> <span class="align-middle">Add Expense</span>
-                        </a>
-					</li>
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="vehicleForm.php">
 						<i class="align-middle fas fa-car" ></i> <span class="align-middle">Record Sale</span>
 						</a>
 					</li>
 
-					<!-- <li class="sidebar-item">
-						<a class="sidebar-link" href="view.php">
-                        <i class="align-middle fa fa-eye"></i> <span class="align-middle">View Sales</span>
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="add_service.php">
+                            <i class="align-middle fas fa-cogs" ></i> <span class="align-middle">Add Service</span>
                         </a>
-					</li> -->
-
+					</li>
 					<li class="sidebar-item">
 						<a class="sidebar-link" href="view_services.php">
                         <i class="align-middle fas fa-clipboard-list"></i> <span class="align-middle">View Services</span>
+                        </a>
+					</li>
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="add_expense.php">
+                            <i class="align-middle fas fa-edit" ></i> <span class="align-middle">Add Expense</span>
                         </a>
 					</li>
                     <li class="sidebar-item">
@@ -97,14 +89,6 @@
                         <i class="align-middle fas fa-file" ></i> <span class="align-middle">View Expenses</span>
                         </a>
 					</li>
-
-
-					<!-- <li class="sidebar-item">
-						<a class="sidebar-link" href="view_payments.php">
-                        <i class="align-middle fa fa-money-bill"></i> <span class="align-middle">View Payments</span>
-                        </a>
-					</li> -->
-
 
 					<li class="sidebar-header">
 						System

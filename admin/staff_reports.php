@@ -139,26 +139,29 @@
                     <!-- Display Results -->
                     <div class="row">
                         <div class="col-12">
+                            <h1 class="h3 mb-2">STAFF SUMMARY</h1>
+                        </div>
+                        <div class="col-12">
                             <div class="card">
                                 <div class="card-body row text-center pt-5">
                                     <div class="col">
-                                        <h5>TOTAL SALES</h5>
+                                        <h4>TOTAL SALES</h4>
                                         <p class="lead">KSH <?php echo number_format($total_revenue, 2); ?></p>
                                     </div>
                                     <div class="col">
-                                        <h5>TOTAL COMMISSION</h5>
+                                        <h4>COMMISSION</h4>
                                         <p class="lead">KSH <?php echo number_format($total_commission, 2); ?></p>
                                     </div>
                                     <div class="col">
-                                        <h5>COMMISSION PAID</h5>
+                                        <h4>COMMISSION PAID</h4>
                                         <p class="lead">KSH <?php echo number_format($total_payment, 2); ?></p>
                                     </div>
                                     <div class="col">
-                                        <h5>DUE PAYMENT</h5>
+                                        <h4>DUE PAYMENT</h4>
                                         <p class="lead">KSH <?php echo number_format(($total_commission - $total_payment)>0?($total_commission - $total_payment):0, 2); ?></p>
                                     </div>
                                     <div class="col">
-                                        <h5>ADVANCE PAYMENT</h5>
+                                        <h4>ADVANCE PAYMENT</h4>
                                         <p class="lead">KSH <?php echo number_format(($total_commission - $total_payment)>0? 0 : ($total_payment - $total_commission ),2); ?></p>
                                     </div>
                                     <div class="col-12">
@@ -178,7 +181,11 @@
                     </div>
 
                     <!-- Payment Table -->
+
                     <div class="row">
+                        <div class=col-12>
+                            <h1 class="h3 mb-2">STAFF PAYMENT</h1>
+                        </div>
                         <div class="col-12">
                             <div class="card w-100">
                                 <div class="card-body">

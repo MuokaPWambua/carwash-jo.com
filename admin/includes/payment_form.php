@@ -94,8 +94,8 @@
             <select name="payment_method" class="form-control" required>
                 <option value="" disabled>Select a method</option>
                 <option value="cash" <?php echo ($existing_payment_method == 'cash') ? 'selected' : ''; ?>>Cash</option>
-                <option value="credit_card" <?php echo ($existing_payment_method == 'credit_card') ? 'selected' : ''; ?>>Credit Card</option>
-                <option value="bank_transfer" <?php echo ($existing_payment_method == 'bank_transfer') ? 'selected' : ''; ?>>Bank Transfer</option>
+                <option value="mpesa" <?php echo ($existing_payment_method == 'mpesa') ? 'selected' : ''; ?>>Mpesa</option>
+                <option value="card" <?php echo ($existing_payment_method == 'card') ? 'selected' : ''; ?>>Card</option>
             </select>
         </div>               
     </div>

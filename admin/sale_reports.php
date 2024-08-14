@@ -257,6 +257,9 @@
                         </div>
                         <div class="row">
                             <div class="col-12">
+                                <h1 class="h3 mb-2">SALES SUMMARY</h1>
+                            </div>
+                            <div class="col-12">
                                 <div class="card">
                                     <div class="card-body row text-center pt-5">
                                         <div class='col-4'>
@@ -298,6 +301,9 @@
                             </div>
                         </div> 
                         <div class="row">
+                        <div class="col-12">
+                            <h1 class="h3 mb-2">SALES</h1>
+                        </div>
                      <div class="col-12">
                         <div class="card">
                             <div class="card-body">

@@ -21,28 +21,36 @@
         $owner_name = mysqli_real_escape_string($con, $_POST['owner_name']);
         $staff = mysqli_real_escape_string($con, $_POST['service_provider']);
         $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
-        $service_type2 = mysqli_escape_string($con, $_POST['service_type']);
+        $service_type2 = $_POST['service_type'];
         $payment_method = mysqli_escape_string($con, $_POST['payment_method']);
         $amount_paid = isset($_POST['amount_paid']) && !empty($_POST['amount_paid'])? mysqli_escape_string($con, $_POST['amount_paid']) : 0 ;
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
-        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, service_type, in_time, payment_method, amount_paid) VALUES ('$owner_name', '$staff', '$vehicle_number', '$service_type2', '$in_time', '$payment_method', '$amount_paid') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', service_type='$service_type2', payment_method='$payment_method', amount_paid='$amount_paid';";
+        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, in_time, payment_method, amount_paid) VALUES ('$owner_name', '$staff', '$vehicle_number', '$in_time', '$payment_method', '$amount_paid') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', payment_method='$payment_method', amount_paid='$amount_paid';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Sale Information Added.";
+            $queue_id = mysqli_insert_id($con);
             try{
-                $subject = "Car Wash  | Your Carwash Initialized!";
-                $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
-                $id = mysqli_fetch_array($id_get);
-                $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
-                $client = mysqli_fetch_array($clients);
-                $description = "The status of your carwash is ".$id['name'];
-                if(sendMail($client['email'], $subject, $client['first_name'], $description, $vehicle_number)){
-                    $message = $message . " Tracking information sent to the customer's email.";
-                }else{
-                    $message = $message . " Failed to send tracking information to the customer.";
-                }
+               if (isset($_POST['service_type'])) {
+                  foreach($service_type2 as $service_type_id){
+                     $service_assignment = "INSERT INTO service_assignment (service_type_id, staff_id, client_id, queue_id) VALUE ('$service_type_id','$staff','$owner_name', '$queue_id');";
+                     mysqli_query($con, $service_assignment); 
+                  }
+               }
+               $message = "Sale Information Added.";
+ 
+               $subject = "Car Wash  | Your Carwash Initialized!";
+               $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
+               $id = mysqli_fetch_array($id_get);
+               $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
+               $client = mysqli_fetch_array($clients);
+               $description = "The status of your carwash is ".$id['name'];
+               if(sendMail($client['email'], $subject, $client['first_name'], $description, $vehicle_number)){
+                  $message = $message . " Tracking information sent to the customer's email.";
+               }else{
+                  $message = $message . " Failed to send tracking information to the customer.";
+               }
             }catch(Exception $e){
                 $message = $message + " Email sending failed.";
             }
@@ -71,7 +79,7 @@
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
 												<label for="inputEmail4">Client Name</label>
                         				<select name="owner_name"" class="form-control" required>
-                                       <option selected>Choose...</option>
+                                       <option selected disabled>select client</option>
                                        <?php
                                           if (mysqli_num_rows($clients) > 0) {
                                                 while($type = mysqli_fetch_assoc($clients)) {
@@ -89,7 +97,7 @@
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
 												<label for="inputState">Staff</label>
                         				<select name="service_provider" class="form-control" required>
-                                       <option selected>Choose...</option>
+                                       <option selected disabled>select staff</option>
                                        <?php
                                           if (mysqli_num_rows($staffs) > 0) {
                                                 while($type = mysqli_fetch_assoc($staffs)) {
@@ -104,8 +112,8 @@
 										<div class="form-row">
         	                           <div class="form-group col-md-4 col-sm-6 col-lg-4">
         										  	<label for="service_type">Service Type</label>
-                                				<select name="service_type" class="form-control" required>
-                                                <option selected>Choose...</option>
+                                				<select name="service_type[]" multiple  class="form-control" required>
+                                                <option selected disabled>select service</option>
                                                 <?php
                                                    if (mysqli_num_rows($service_type) > 0) {
                                                       while($servicetype = mysqli_fetch_assoc($service_type)) {
@@ -118,7 +126,7 @@
                                     <div class="form-group col-md-4 col-sm-6 col-lg-4">
         										  	<label for="service_type">Payment Method</label>
                                 				<select name="payment_method" class="form-control">
-                                             <option selected>Choose...</option>
+                                             <option selected disabled>select</option>
                                              <option value='mpesa'>Mpesa</option>
                                              <option value='cash'>Cash</option>
                                              <option value='card'>Card</option>
