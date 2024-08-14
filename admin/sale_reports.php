@@ -36,7 +36,7 @@
         }
         // Apply service filter
         if (!empty($service_id)) {
-            $where_conditions[] = "q.service_type = '$service_id'";
+            $where_conditions[] = "FIND_IN_SET('$service_id', service_type_ids)";
         }
     
         // Apply status filter
@@ -57,61 +57,70 @@
     }
     
     $sales_query = "SELECT 
-            q.id, 
-            q.last_update,
-            q.staff, 
-            q.payment_method as payment_method,
-            e.name as staff_name,
-            q.in_time,
-            q.out_time,
-            q.amount_paid as amount_paid,
-            st.type as 'service_type',
-            q.status_type as 'status_type',
-            s.name as 'status',
-            c.first_name as owner_name,
-            q.vehicle_number,
-            st.id AS service_id,
-            st.service_cost AS service_cost,
-            st.service_commission AS service_commission,
-            COALESCE(SUM(st.service_cost), 0) AS total_revenue,
-            COALESCE(SUM(st.service_cost * st.service_commission / 100), 0) AS total_commission,
+        q.id, 
+        q.last_update,
+        q.staff, 
+        q.payment_method as payment_method,
+        e.name as staff_name,
+        q.in_time,
+        q.out_time,
+        q.amount_paid as amount_paid,
+        q.status_type as 'status_type',
+        s.name as 'status',
+        c.first_name as owner_name,
+        q.vehicle_number,
+        st.total_service_cost as service_cost,
+        st.total_service_commission as service_commission, 
+        GROUP_CONCAT(st.service_type) AS service_type, -- List of all service_type_ids associated with the queue
+        GROUP_CONCAT(st.service_type_ids) AS service_type_ids, -- List of all service_type_ids associated with the queue
+        COALESCE(SUM(st.total_service_cost), 0) AS total_revenue, -- Total revenue from all associated services
+        COALESCE(SUM(st.total_service_commission), 0) AS total_commission, -- Total commission from all associated services
         CASE 
-            WHEN st.service_cost - q.amount_paid > 0 THEN st.service_cost - q.amount_paid 
+            WHEN SUM(st.total_service_cost) - q.amount_paid > 0 THEN SUM(st.total_service_cost) - q.amount_paid 
             ELSE 0 
-            END AS total_due,
+        END AS total_due,
         CASE 
-            WHEN q.amount_paid - st.service_cost > 0 THEN q.amount_paid - st.service_cost 
+            WHEN q.amount_paid - SUM(st.total_service_cost) > 0 THEN q.amount_paid - SUM(st.total_service_cost) 
             ELSE 0 
-            END AS total_advance  
-        FROM 
-            service_type st
-        JOIN 
-            queue q ON st.id = q.service_type
-        JOIN 
-            status_type s ON s.id = q.status_type
-        JOIN 
-            staff e ON e.id = q.staff 
-        JOIN 
-            clients c ON c.id = q.client_id
-            $where_clause
+        END AS total_advance  
+    FROM 
+        (
+        SELECT 
+            sa.queue_id as queue_id,
+            GROUP_CONCAT(sts.type) AS service_type, -- Group services by queue
+            GROUP_CONCAT(sts.id) AS service_type_ids, -- Group services by queue
+            COALESCE(SUM(sts.service_cost), 0) AS total_service_cost, -- Sum service costs
+            COALESCE(SUM(sts.service_cost * sts.service_commission / 100), 0) AS total_service_commission -- Sum service commissions
+        FROM
+            service_assignment sa  
+        JOIN
+            service_type sts ON sts.id = sa.service_type_id
         GROUP BY 
-            q.id, 
-            q.last_update,
-            q.staff, 
-            staff_name,
-            q.in_time,
-            q.out_time,
-            st.type,
-            q.status_type,
-            s.name,
-            owner_name,
-            q.vehicle_number,
-            st.id,
-            st.type,
-            st.service_cost,
-            st.service_commission
-        ORDER BY 
-            q.last_update DESC";
+            queue_id
+        ) st
+    JOIN 
+        queue q ON q.id = st.queue_id
+    JOIN 
+        status_type s ON s.id = q.status_type
+    JOIN 
+        staff e ON e.id = q.staff 
+    JOIN 
+        clients c ON c.id = q.client_id
+        $where_clause
+    GROUP BY 
+        q.id, 
+        q.last_update,
+        q.staff, 
+        staff_name,
+        q.in_time,
+        q.out_time,
+        q.status_type,
+        s.name,
+        owner_name,
+        q.vehicle_number
+    ORDER BY 
+        q.last_update DESC";
+
     
     $sales_result = mysqli_query($con, $sales_query);
 
@@ -315,8 +324,8 @@
                                         <th>Client</th>
                                         <th>Staff</th>
                                         <th>Service</th>
-                                        <th>Service Commission</th>
-                                        <th>Service Cost</th>
+                                        <th>Cost</th>
+                                        <th>Commission</th>
                                         <th>Amount Paid</th>
                                         <th>Amount Due</th>
                                         <th>Advance Payment</th>
@@ -357,9 +366,9 @@
                                     <td>'.$row['owner_name'].'</td>
                                     <td>'.$row['staff_name'].'</td>
                                     <td>'.$row['service_type'].'</td>
-                                    <td> '.$row['service_commission'] .' %</td>
                                     <td> KSH '.number_format($row['service_cost'], 2).'</td>
-                                    <td> KSH '.number_format($row['amount_paid'] , 2).'</td>
+                                    <td> KSH '.number_format($row['service_commission'], 2) .'</td>
+                                    <td> KSH '.number_format($row['amount_paid'], 2).'</td>
                                     <td> KSH '.number_format($row['service_cost'] > $row['amount_paid']? $row['service_cost']-$row['amount_paid'] : 0     , 2).'</td>
                                     <td> KSH '.number_format($row['service_cost'] < $row['amount_paid']? $row['amount_paid']-$row['service_cost'] : 0  , 2).'</td>
                                     <td>'.$row['payment_method'] .' </td>
@@ -388,9 +397,9 @@
                 <th>Vehicle Number</th>
                 <th>Client</th>
                 <th>Staff</th>
-                <th>Service</th>
-                <th>Service Commission</th>
-                <th>Service Cost</th>
+                <th>Services</th>
+                <th>Cost</th>
+                <th>Commission</th>
                 <th>Amount Paid</th>
                 <th>Amount Due</th>
                 <th>Advance Payment</th>

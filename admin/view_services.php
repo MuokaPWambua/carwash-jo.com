@@ -3,21 +3,38 @@
    <?php include 'includes/head.php';
    
    $sql = "SELECT 
-        st.id AS service_id,
+        st.service_type_id AS service_id,
         st.type AS service_name,
-        st.service_cost AS service_cost,
-        st.service_commission AS service_commission,
-        COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END), 0) AS total_revenue,
-        COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END), 0) AS total_commission    
+        st.service_cost as service_cost,
+        st.service_commission as service_commission,
+        SUM(st.total_service_cost) AS total_service_cost,
+        SUM(st.total_service_commission) AS total_service_commission,
+        SUM(st.total_service_cost) AS total_revenue, 
+        SUM(st.total_service_commission) AS total_commission 
     FROM 
-        service_type st
-    LEFT JOIN 
-        queue q ON st.id = q.service_type
+        (
+        SELECT 
+            sa.service_type_id as service_type_id,
+            sa.queue_id as queue_id,
+            sts.type as type,
+            sts.service_cost as service_cost,
+            sts.service_commission as service_commission,
+            SUM(sts.service_cost) AS total_service_cost,
+            SUM(sts.service_cost * sts.service_commission / 100) AS total_service_commission 
+        FROM
+            service_assignment sa  
+        JOIN
+            service_type sts ON sts.id = sa.service_type_id
+        GROUP BY 
+            service_type_id, queue_id, type
+        ) st
+    JOIN 
+        queue q ON q.id = st.queue_id
     GROUP BY 
-        st.id
+        st.service_type_id, st.type
     ORDER BY 
-        st.id
-    ASC LIMIT 1000";
+        st.service_type_id";
+
         
     $result = mysqli_query($con, $sql);
     $message ="";
@@ -74,10 +91,10 @@
                                     echo '<tr>
                                         <td>'.$row['service_id'].'</td>
                                         <td>'.$row['service_name'].'</td>
-                                        <td>'.$row['service_cost'].'</td>
-                                        <td>'.$row['service_commission'].'</td>
-                                        <td>'.$row['total_revenue'].'</td>
-                                        <td>'.$row['total_commission'].'</td>
+                                        <td> KSH '.number_format($row['service_cost']).'</td>
+                                        <td>'.$row['service_commission'].' % </td>
+                                        <td> KSH '.number_format($row['total_revenue']).'</td>
+                                        <td> KSH '.number_format($row['total_commission']).'</td>
                                         <td class="table-action">
                                             <a onclick="loadService('.$row['service_id'].')" data-id="'.$row['service_id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
                                         </td>

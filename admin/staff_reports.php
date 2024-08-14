@@ -32,14 +32,25 @@
         e.employee_email AS employee_email,
         e.employee_contact AS employee_phone,
         e.employee_address AS employee_address,
-        SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END) AS total_revenue,
-        SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END) AS total_commission
+        COALESCE(r.total_revenue, 0) AS total_revenue,
+        COALESCE(r.total_commission, 0) AS total_commission
     FROM 
         staff e
     JOIN 
         queue q ON e.id = q.staff
     JOIN 
-        service_type st ON q.service_type = st.id
+        (
+            SELECT 
+                sa.staff_id as staff_id,
+                SUM(st.service_cost) AS total_revenue,
+                SUM(st.service_cost * st.service_commission / 100 ) AS total_commission
+            FROM 
+                service_assignment sa                
+            JOIN 
+                service_type st ON sa.service_type_id = st.id
+            GROUP BY 
+                staff_id
+        ) r ON e.id = r.staff_id
     WHERE 
         q.in_time BETWEEN '$start_date' AND '$end_date'
     $staff_condition

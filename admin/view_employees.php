@@ -28,19 +28,18 @@
     LEFT JOIN 
         (
             SELECT 
-                q.staff,
-                SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END) AS total_revenue,
-                SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END) AS total_commission
+                sa.staff_id as staff_id,
+                SUM(st.service_cost) AS total_revenue,
+                SUM(st.service_cost * st.service_commission / 100 ) AS total_commission
             FROM 
-                queue q
+                service_assignment sa                
             LEFT JOIN 
-                service_type st ON q.service_type = st.id
+                service_type st ON sa.service_type_id = st.id
             GROUP BY 
-                q.staff
-        ) r ON e.id = r.staff
+                staff_id
+        ) r ON e.id = r.staff_id
     ORDER BY
-        total_revenue ASC
-    LIMIT 1000;";
+        total_revenue DESC;";
         
     $result = mysqli_query($con, $sql);
         

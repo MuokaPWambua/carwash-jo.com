@@ -112,7 +112,7 @@
 										<div class="form-row">
         	                           <div class="form-group col-md-4 col-sm-6 col-lg-4">
         										  	<label for="service_type">Service Type</label>
-                                				<select name="service_type[]" multiple  class="form-control" required>
+                                				<select name="service_type[]" multiple='multiple' id='service' class="form-control" required>
                                                 <option selected disabled>select service</option>
                                                 <?php
                                                    if (mysqli_num_rows($service_type) > 0) {
@@ -151,6 +151,7 @@
             <?php include 'includes/footer.php';?>
          </div>
       </div>
+      
       <?php include 'includes/scripts.php';?>
    </body>
 </html>

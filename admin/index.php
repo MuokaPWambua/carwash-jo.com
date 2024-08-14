@@ -8,17 +8,38 @@
       $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d 23:59:59'));
 
       // Define the query to get total revenue and commission
-      $total_revenue_commission_query = "
-         SELECT
-            COALESCE(SUM(st.service_cost ), 0) AS total_revenue,
-            COALESCE(SUM(st.service_cost * st.service_commission / 100), 0) AS total_commission 
+      $total_revenue_commission_query = "SELECT
+            COALESCE(SUM(st.total_service_cost), 0) AS total_revenue, -- Total revenue from all associated services
+            COALESCE(SUM(st.total_service_commission), 0) AS total_commission, -- Total commission from all associated services
+            CASE 
+                  WHEN SUM(st.total_service_cost) - q.amount_paid > 0 THEN SUM(st.total_service_cost) - q.amount_paid 
+                  ELSE 0 
+            END AS total_due,
+            CASE 
+                  WHEN q.amount_paid - SUM(st.total_service_cost) > 0 THEN q.amount_paid - SUM(st.total_service_cost) 
+                  ELSE 0 
+            END AS total_advance  
          FROM 
-            queue q
-         LEFT JOIN 
-            service_type st ON q.service_type = st.id
+            (
+            SELECT 
+                  sa.queue_id as queue_id,
+                  GROUP_CONCAT(sts.type) AS service_type, -- Group services by queue
+                  GROUP_CONCAT(sts.id) AS service_type_ids, -- Group services by queue
+                  COALESCE(SUM(sts.service_cost), 0) AS total_service_cost, -- Sum service costs
+                  COALESCE(SUM(sts.service_cost * sts.service_commission / 100), 0) AS total_service_commission -- Sum service commissions
+            FROM
+               service_assignment sa  
+            JOIN
+               service_type sts ON sts.id = sa.service_type_id
+            GROUP BY 
+               queue_id
+            ) st
+         JOIN 
+            queue q ON q.id = st.queue_id
          WHERE 
-            q.in_time BETWEEN '$start_date' AND '$end_date';";
-      
+            q.in_time BETWEEN '$start_date' AND '$end_date'
+         GROUP BY
+            q.amount_paid;";
       // Execute the query
       $total_res_com = mysqli_query($con, $total_revenue_commission_query);
       
@@ -26,6 +47,8 @@
       if ($row = mysqli_fetch_assoc($total_res_com)) {
          $total_revenue = $row['total_revenue'];
          $total_commission = $row['total_commission'];
+         
+
       } else {
          $total_revenue = 0;
          $total_commission = 0;
