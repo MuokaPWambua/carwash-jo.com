@@ -23,7 +23,7 @@
 	<link rel="shortcut icon" href="../../admin/img/ico.png" />
 	
 
-	<title>Car Wash Jo - Login</title>
+	<title>Car Wash Login</title>
 
 	<link href="css/app.css" rel="stylesheet">
 	

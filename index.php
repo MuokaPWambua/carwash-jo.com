@@ -2,11 +2,11 @@
 
 include 'admin/includes/dbconfig.php';
 include 'url.php';
-// $_SESSION["track"]=' ';
+$result = null;  // Initialize $result
 
 if(isset($_GET['track'])){
     $id = mysqli_real_escape_string($con, $_GET['track']);
-    $sql = "SELECT q.last_update, q.id, q.staff, q.status_type as 'status_type', st.name as 'status', q.owner_name, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND (q.vehicle_number = '".$id."' or q.id = '".$id."')";
+    $sql = "SELECT q.last_update, q.id, q.staff, q.status_type as 'status_type', st.name as 'status', q.client_id, q.vehicle_number from queue q, status_type st where st.id = q.status_type AND (q.vehicle_number = '".$id."' or q.id = '".$id."')";
     $result = mysqli_query($con, $sql);    
 }
 // else{
@@ -114,7 +114,7 @@ if(isset($_GET['track'])){
 
 					</div>
 				</div>
-				<?php if(isset($_GET['track'])) { include 'includes/footer.php';} ?>
+				<?php  include 'includes/footer.php';?>
 			</div>
 		</div>
 	</div>

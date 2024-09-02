@@ -3,25 +3,41 @@
    <?php include 'includes/head.php';
    
    $sql = "SELECT 
-        st.id AS service_id,
+        st.service_type_id AS service_id,
         st.type AS service_name,
-        st.service_cost AS service_cost,
-        st.service_commission AS service_commission,
-        COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost ELSE 0 END), 0) AS total_revenue,
-        COALESCE(SUM(CASE WHEN q.status_type = 3 THEN st.service_cost * st.service_commission / 100 ELSE 0 END), 0) AS total_commission    FROM 
-        service_type st
-    LEFT JOIN 
-        queue q ON st.id = q.service_type
+        st.service_cost as service_cost,
+        st.service_commission as service_commission,
+        SUM(st.total_service_cost) AS total_service_cost,
+        SUM(st.total_service_commission) AS total_service_commission,
+        SUM(st.total_service_cost) AS total_revenue, 
+        SUM(st.total_service_commission) AS total_commission 
+    FROM 
+        (
+        SELECT 
+            sa.service_type_id as service_type_id,
+            sa.queue_id as queue_id,
+            sts.type as type,
+            sts.service_cost as service_cost,
+            sts.service_commission as service_commission,
+            SUM(sts.service_cost) AS total_service_cost,
+            SUM(sts.service_cost * sts.service_commission / 100) AS total_service_commission 
+        FROM
+            service_assignment sa  
+        JOIN
+            service_type sts ON sts.id = sa.service_type_id
+        GROUP BY 
+            service_type_id, queue_id, type
+        ) st
+    JOIN 
+        queue q ON q.id = st.queue_id
     GROUP BY 
-        st.id
+        st.service_type_id, st.type
     ORDER BY 
-        st.id
-    ASC LIMIT 1000";
+        st.service_type_id";
+
         
     $result = mysqli_query($con, $sql);
-        
-    $message="";   
-    
+    $message ="";
     if(isset($_POST['submit'])){
         $message;
         $service_name = mysqli_real_escape_string($con, $_POST['service_name']);
@@ -36,7 +52,7 @@
             $message = "Error: " . "<br>" . mysqli_error($conn);
         }
         
-    }            
+    }
     ?>
    <body>
       <div class="wrapper">
@@ -45,7 +61,9 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">View All Services</h1>
+                  <h1 class="h3 mb-3 float-left">View All Services</h1>
+                  <button class='btn btn-primary float-right' data-toggle="modal" data-target="#addService"> Add Service</button>
+                  <div class='clearfix'></div>
                   <div class="row">
                      <div class="col-12">
                         <div class="card">
@@ -73,13 +91,13 @@
                                     echo '<tr>
                                         <td>'.$row['service_id'].'</td>
                                         <td>'.$row['service_name'].'</td>
-                                        <td>'.$row['service_cost'].'</td>
-                                        <td>'.$row['service_commission'].'</td>
-                                        <td>'.$row['total_revenue'].'</td>
-                                        <td>'.$row['total_commission'].'</td>
+                                        <td> KSH '.number_format($row['service_cost']).'</td>
+                                        <td>'.$row['service_commission'].' % </td>
+                                        <td> KSH '.number_format($row['total_revenue']).'</td>
+                                        <td> KSH '.number_format($row['total_commission']).'</td>
                                         <td class="table-action">
-                                                    <a onclick="loadData('.$row['id'].')" data-id="'.$row['id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
-                                                </td>
+                                            <a onclick="loadService('.$row['service_id'].')" data-id="'.$row['service_id'].'" type="button" class="btn" data-toggle="modal" data-target="#deleteModal"><i class="align-middle" data-feather="edit"></i> UPDATE</a>
+                                        </td>
                                     </tr>';
                                 
                             ?> 
@@ -135,7 +153,42 @@
 										</div>
 									</div>
 									<!-- END delete modal -->
+									      				<!-- BEGIN delete modal -->
+                                                          <div class="modal fade deleteModal" id="addService" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Service</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body m-3">
+                                    <form action="" method="POST">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Service Name</label>
+                                            <input type="text" name="service_name" class="form-control" placeholder="Buffing" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label for="inputPassword4">Service Cost</label>
+                                            <input type="number" class="form-control" name="service_cost" placeholder="3000" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label for="inputState">Service Commission</label>
+                                            <input type="number" class="form-control" name="service_commission" placeholder="20%" required>
+                                        </div>
+                                    </div>
+                                    
+									<button name="submit" type="submit" class="btn btn-primary">Add Service</button>
+								</form>             
+                                                       </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
 									
+
       <?php include 'includes/scripts.php';?>
    </body>
 </html>

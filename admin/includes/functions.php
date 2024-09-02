@@ -1,8 +1,8 @@
 <?php
-    
+include ('../../url.php');
 function sendMail($to, $subject, $name, $description, $id){
  
-     $from = 'Car Wash Jo <info@carwash-jo.com>';
+     $from = 'Car Wash <info@nextgensoft.co.ke>';
      
     // To send HTML mail, the Content-type header must be set
     $headers  = 'MIME-Version: 1.0' . "\r\n";
@@ -12,6 +12,7 @@ function sendMail($to, $subject, $name, $description, $id){
     $Body = str_replace('{{name}}', $name, $Body);
     $Body = str_replace('{{description}}', $description, $Body);
     $html = str_replace('{{id}}', $id, $Body);
+    $url = str_replace('{{url}}', $url, $Body);
 
     // Create email headers
     $headers .= 'From: '.$from."\r\n".

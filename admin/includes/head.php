@@ -27,15 +27,11 @@ if(!isset($_SESSION["id"])) {
     <meta property="twitter:description" content="Check your car wash status online!">
     <meta property="twitter:image" content="../../assets/banner.jpg">
 
-	<link rel="shortcut icon" href="../../admin/img/ico.png" />
-	
-
 	<title>Car Wash</title>
 
 	<link href="css/app.css" rel="stylesheet">
-	
-	<script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
-	
-<link rel="stylesheet" type="text/css" href="css/datatables.min.css"/>
- 
+	<link rel="shortcut icon" href="../../admin/img/ico.png" />        
+    <link rel="stylesheet" type="text/css" href="css/datatables.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Styles -->
 </head>

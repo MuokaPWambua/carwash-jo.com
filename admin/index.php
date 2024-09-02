@@ -4,22 +4,42 @@
       include 'includes/head.php';
       
       // Get the current date if no parameters are provided
-      $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d 00:00:00'));
+      $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : (isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d 00:00:00', strtotime("-1 month")));
       $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : (isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d 23:59:59'));
 
       // Define the query to get total revenue and commission
-      $total_revenue_commission_query = "
-         SELECT 
-            SUM(st.service_cost) AS total_revenue,
-            SUM(st.service_cost * st.service_commission / 100) AS total_commission
+      $total_revenue_commission_query = "SELECT
+            COALESCE(SUM(st.total_service_cost), 0) AS total_revenue, -- Total revenue from all associated services
+            COALESCE(SUM(st.total_service_commission), 0) AS total_commission, -- Total commission from all associated services
+            CASE 
+                  WHEN SUM(st.total_service_cost) - q.amount_paid > 0 THEN SUM(st.total_service_cost) - q.amount_paid 
+                  ELSE 0 
+            END AS total_due,
+            CASE 
+                  WHEN q.amount_paid - SUM(st.total_service_cost) > 0 THEN q.amount_paid - SUM(st.total_service_cost) 
+                  ELSE 0 
+            END AS total_advance  
          FROM 
-            queue q
-         LEFT JOIN 
-            service_type st ON q.service_type = st.id
+            (
+            SELECT 
+                  sa.queue_id as queue_id,
+                  GROUP_CONCAT(sts.type) AS service_type, -- Group services by queue
+                  GROUP_CONCAT(sts.id) AS service_type_ids, -- Group services by queue
+                  COALESCE(SUM(sts.service_cost), 0) AS total_service_cost, -- Sum service costs
+                  COALESCE(SUM(sts.service_cost * sts.service_commission / 100), 0) AS total_service_commission -- Sum service commissions
+            FROM
+               service_assignment sa  
+            JOIN
+               service_type sts ON sts.id = sa.service_type_id
+            GROUP BY 
+               queue_id
+            ) st
+         JOIN 
+            queue q ON q.id = st.queue_id
          WHERE 
-            q.in_time BETWEEN '$start_date' AND '$end_date' 
-         AND q.status_type = 3;";
-      
+            q.in_time BETWEEN '$start_date' AND '$end_date'
+         GROUP BY
+            q.amount_paid;";
       // Execute the query
       $total_res_com = mysqli_query($con, $total_revenue_commission_query);
       
@@ -27,6 +47,8 @@
       if ($row = mysqli_fetch_assoc($total_res_com)) {
          $total_revenue = $row['total_revenue'];
          $total_commission = $row['total_commission'];
+         
+
       } else {
          $total_revenue = 0;
          $total_commission = 0;
@@ -55,15 +77,15 @@ $total_staff_result = mysqli_query($con, $total_staff_query);
 
 // Fetch the result
 if ($row = mysqli_fetch_assoc($total_staff_result)) {
-    $total_staff = $row['total_staff'];
+   $total_staff = $row['total_staff'];
 } else {
-    $total_staff = 0;
+   $total_staff = 0;
 }  
 // Define the query to get the total count of queue entries based on status type
 $total_queue_status_query = "
-    SELECT status_type, COUNT(*) AS total_count 
-    FROM queue 
-    GROUP BY status_type";
+   SELECT status_type, COUNT(*) AS total_count 
+   FROM queue 
+   GROUP BY status_type";
 
 // Execute the query
 $total_queue_status_result = mysqli_query($con, $total_queue_status_query);
@@ -73,8 +95,9 @@ $total_queue_status = array();
 
 // Fetch the results
 while ($row = mysqli_fetch_assoc($total_queue_status_result)) {
-    $total_queue_status[$row['status_type']] = $row['total_count'];
+   $total_queue_status[$row['status_type']] = $row['total_count'];
 }
+
 $completed = 0;
 $initialized = 0;
 $dispatched = 0;

@@ -9,35 +9,48 @@
     $staff_query = "SELECT * FROM staff";
     $service_typesql = "SELECT * FROM service_type";
 
+    $clients_sql = "SELECT * FROM clients";
+
     $staffs = mysqli_query($con, $staff_query);
+    $clients = mysqli_query($con, $clients_sql);
     $service_type = mysqli_query($con, $service_typesql);
-    
+    $message ='';
     if(isset($_POST['submit'])){
         $message;
-        $owner_email = mysqli_real_escape_string($con, $_POST['owner_email']);
+        
         $owner_name = mysqli_real_escape_string($con, $_POST['owner_name']);
-        $owner_phone = mysqli_real_escape_string($con, $_POST['owner_phone']);
-        $owner_address = mysqli_real_escape_string($con, $_POST['owner_address']);
         $staff = mysqli_real_escape_string($con, $_POST['service_provider']);
         $vehicle_number = mysqli_real_escape_string($con, $_POST['vehicle_number']);
-        $service_type2 = mysqli_escape_string($con, $_POST['service_type']);
+        $service_type2 = $_POST['service_type'];
+        $payment_method = mysqli_escape_string($con, $_POST['payment_method']);
+        $amount_paid = isset($_POST['amount_paid']) && !empty($_POST['amount_paid'])? mysqli_escape_string($con, $_POST['amount_paid']) : 0 ;
         $datum = new DateTime();
         $in_time = $datum->format('Y-m-d H:i:s');
         
-        $insert = "INSERT INTO queue (owner_email, owner_name, owner_phone, owner_address, staff, vehicle_number, service_type, in_time) VALUES ('$owner_email', '$owner_name', '$owner_phone', '$owner_address', '$staff', '$vehicle_number', '$service_type2', '$in_time') ON DUPLICATE KEY UPDATE owner_email='$owner_email', staff='$staff', owner_name='$owner_name', owner_phone='$owner_phone', owner_address='$owner_address', service_type='$service_type2';";
+        $insert = "INSERT INTO queue (client_id, staff, vehicle_number, in_time, payment_method, amount_paid) VALUES ('$owner_name', '$staff', '$vehicle_number', '$in_time', '$payment_method', '$amount_paid') ON DUPLICATE KEY UPDATE staff='$staff', client_id='$owner_name', vehicle_number='$vehicle_number', payment_method='$payment_method', amount_paid='$amount_paid';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Vehicle Information Added.";
+            $queue_id = mysqli_insert_id($con);
             try{
-                $subject = "Car Wash  | Your Carwash Inititalized!";
-                $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
-                $id = mysqli_fetch_array($id_get);
-                $description = "The status of your carwash is ".$id['name'];
-                if(sendMail($owner_email, $subject, $owner_name, $description, $vehicle_number)){
-                    $message = $message . " Tracking information sent to the customer's email.";
-                }else{
-                    $message = $message . " Failed to send tracking information to the customer.";
-                }
+               if (isset($_POST['service_type'])) {
+                  foreach($service_type2 as $service_type_id){
+                     $service_assignment = "INSERT INTO service_assignment (service_type_id, staff_id, client_id, queue_id) VALUE ('$service_type_id','$staff','$owner_name', '$queue_id');";
+                     mysqli_query($con, $service_assignment); 
+                  }
+               }
+               $message = "Sale Information Added.";
+ 
+               $subject = "Car Wash  | Your Carwash Initialized!";
+               $id_get = mysqli_query($con, "SELECT * FROM status_type WHERE id='1' LIMIT 1");
+               $id = mysqli_fetch_array($id_get);
+               $clients = mysqli_query($con, "SELECT * FROM clients WHERE id='$owner_name' LIMIT 1");
+               $client = mysqli_fetch_array($clients);
+               $description = "The status of your carwash is ".$id['name'];
+               if(sendMail($client['email'], $subject, $client['first_name'], $description, $vehicle_number)){
+                  $message = $message . " Tracking information sent to the customer's email.";
+               }else{
+                  $message = $message . " Failed to send tracking information to the customer.";
+               }
             }catch(Exception $e){
                 $message = $message + " Email sending failed.";
             }
@@ -53,7 +66,7 @@
             <?php include 'includes/navtop.php';?>
             <main class="content">
                <div class="container-fluid p-0">
-                  <h1 class="h3 mb-3">Add New Vehicle</h1>
+                  <h1 class="h3 mb-3">Record Sale</h1>
                   <div class="row">
                      <div class="col-12">
                         <div class="card">
@@ -61,20 +74,30 @@
                               <h5 class="card-title mb-0"><?php echo $message; ?></h5>
                            </div>
                            <div class="card-body">
-                               	<form action="" method="POST">
+                          	<form action="" method="POST">
 										<div class="form-row">
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
-												<label for="inputEmail4">Owner's Name</label>
-												<input type="text" name="owner_name" class="form-control" placeholder="Owner's Name">
+												<label for="inputEmail4">Client Name</label>
+                        				<select name="owner_name"" class="form-control" required>
+                                       <option selected disabled>select client</option>
+                                       <?php
+                                          if (mysqli_num_rows($clients) > 0) {
+                                                while($type = mysqli_fetch_assoc($clients)) {
+                                                   echo '<option value="'.$type["id"].'">'.$type["first_name"].'</option>'; 
+                                                }      
+                                          }
+                                       ?>
+                                    </select>
+                                    
 											</div>
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
-												<label for="inputPassword4">Vehicle Number</label>
-												<input type="text" class="form-control" name="vehicle_number" placeholder="Vehicle Number">
+												<label for="inputPassword4">Client Vehicle Number</label>
+												<input type="text" class="form-control" name="vehicle_number" placeholder="Vehicle Number" required>
 											</div>
 											<div class="form-group col-md-4 col-sm-6 col-lg-4">
-												<label for="inputState">Service Provider</label>
+												<label for="inputState">Staff</label>
                         				<select name="service_provider" class="form-control" required>
-                                       <option selected>Choose...</option>
+                                       <option selected disabled>select staff</option>
                                        <?php
                                           if (mysqli_num_rows($staffs) > 0) {
                                                 while($type = mysqli_fetch_assoc($staffs)) {
@@ -87,10 +110,10 @@
 										</div>
 										
 										<div class="form-row">
-        	                            <div class="form-group col-md-4 col-sm-6 col-lg-4">
-        												<label for="service_type">Service Type</label>
-                                				<select name="service_type" class="form-control">
-                                                <option selected>Choose...</option>
+        	                           <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										  	<label for="service_type">Service Type</label>
+                                				<select name="service_type[]" multiple='multiple' id='service' class="form-control" required>
+                                                <option selected disabled>select service</option>
                                                 <?php
                                                    if (mysqli_num_rows($service_type) > 0) {
                                                       while($servicetype = mysqli_fetch_assoc($service_type)) {
@@ -99,26 +122,25 @@
                                                    }
                                                 ?>
                                           </select>
-                        					</div>
-                        											
-                        											
-											<div class="form-group col-md-4 col-sm-6 col-lg-4">
-												<label for="owner_email">Email (To send status updates)</label>
-										<input type="email" class="form-control" name="owner_email">
-											</div>
-											<div class="form-group col-md-4 col-sm-6 col-lg-4">
-												<label for="owner_phone">Phone Number</label>
-												<input type="text" class="form-control" name="owner_phone">
-											</div>
+                        				</div>
+                                    <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										  	<label for="service_type">Payment Method</label>
+                                				<select name="payment_method" class="form-control">
+                                             <option selected disabled>select</option>
+                                             <option value='mpesa'>Mpesa</option>
+                                             <option value='cash'>Cash</option>
+                                             <option value='card'>Card</option>
+                                          </select>
+                        				</div>
+                                    <div class="form-group col-md-4 col-sm-6 col-lg-4">
+        										  	<label for="service_type">Amount Paid</label>
+                                       <input type='number' name='amount_paid' class="form-control" placeholder='1000'/>
+                        				</div>
+											
 										</div>
 										
-										
-										<div class="form-group">
-											<label for="owner_address">Address</label>
-											<textarea type="text" class="form-control" name="owner_address" placeholder=""></textarea>
-										</div>
-
-										<button name="submit" type="submit" class="btn btn-primary">Add Vehicle</button>
+							
+										<button name="submit" type="submit" class="btn btn-primary">Add Sale</button>
 									</form>
                            </div>
                         </div>
@@ -129,6 +151,7 @@
             <?php include 'includes/footer.php';?>
          </div>
       </div>
+      
       <?php include 'includes/scripts.php';?>
    </body>
 </html>

@@ -4,7 +4,7 @@
 
     include 'includes/head.php';
     include 'includes/functions.php';
-
+    $message ='';
     if(isset($_POST['submit'])){
         $message;
         $service_name = mysqli_real_escape_string($con, $_POST['service_name']);
@@ -14,7 +14,7 @@
         $insert = "INSERT INTO service_type (type, service_cost, service_commission) VALUES ('$service_name', '$service_cost', '$service_commission') ON DUPLICATE KEY UPDATE type='$service_name', service_cost='$service_cost', service_commission='$service_commission';";
         
         if(mysqli_query($con, $insert)){
-            $message = "Vehicle Information Added.";
+            $message = "Service Information Added.";
         } else {
             $message = "Error: " . "<br>" . mysqli_error($conn);
         }
